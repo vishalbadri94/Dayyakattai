@@ -439,6 +439,15 @@ class DaayakattaiGame {
   DiceRoll? get currentRoll => _pendingRolls.isEmpty ? null : _pendingRolls.first;
   List<DiceRoll> get pendingRolls => List.unmodifiable(_pendingRolls);
   int get consecutiveBonusCount => _consecutiveBonusCount;
+  
+  // Debug helper method for unit testing to override private state of pieces
+  void debugSetupPiece(int playerId, int pieceId, PieceState state, {int outerSteps = 0, int innerIndex = 0}) {
+    final player = _players[playerId];
+    final piece = player.pieces[pieceId];
+    piece._state = state;
+    piece._outerSteps = outerSteps;
+    piece._innerIndex = innerIndex;
+  }
 
   // -------------------------------------------------------------------------
   // Turn controls
