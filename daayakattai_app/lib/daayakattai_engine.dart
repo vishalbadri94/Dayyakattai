@@ -63,7 +63,7 @@ class Board {
   ];
 
   /// The 9 symmetric cross positions (Malai / safe cells).
-  static const Set<BoardCoordinate> malaiCells = {
+  static final Set<BoardCoordinate> malaiCells = {
     BoardCoordinate(0, 3), // Top starting gate
     BoardCoordinate(1, 3),
     BoardCoordinate(2, 3),
@@ -447,6 +447,11 @@ class DaayakattaiGame {
     piece._state = state;
     piece._outerSteps = outerSteps;
     piece._innerIndex = innerIndex;
+  }
+  
+  // Public check for landing rules, exposed for UI highlights and test suites
+  bool canLandOn(BoardCoordinate coord, Player mover) {
+    return _canLandOn(coord, mover);
   }
 
   // -------------------------------------------------------------------------

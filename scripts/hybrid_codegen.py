@@ -26,6 +26,32 @@ def get_gemini_key():
             return f.read().strip()
     return None
 
+def log_api_usage(api_name, model_name, input_tokens, output_tokens):
+    log_file = os.path.join(ROOT_DIR, "docs", "api_usage_log.md")
+    
+    cost = 0.0
+    if model_name == "deepseek-chat":
+        cost = (input_tokens * 0.14 + output_tokens * 0.28) / 1000000.0
+    elif model_name == "deepseek-reasoner":
+        cost = (input_tokens * 0.55 + output_tokens * 2.19) / 1000000.0
+    elif "gemini-1.5-pro" in model_name:
+        cost = (input_tokens * 1.25 + output_tokens * 5.00) / 1000000.0
+    elif "gemini-1.5-flash" in model_name:
+        cost = (input_tokens * 0.075 + output_tokens * 0.30) / 1000000.0
+        
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if not os.path.exists(log_file):
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        with open(log_file, "w", encoding="utf-8") as f:
+            f.write("# API Token Usage and Cost Log\n\n")
+            f.write("| Timestamp | API | Model | Input Tokens | Output Tokens | Estimated Cost ($) |\n")
+            f.write("| :--- | :--- | :--- | :--- | :--- | :--- |\n")
+            
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(f"| {timestamp} | {api_name} | {model_name} | {input_tokens} | {output_tokens} | ${cost:.6f} |\n")
+
 def call_gemini(prompt, model="gemini-1.5-pro", api_key=None):
     if not api_key:
         api_key = get_gemini_key()
@@ -49,6 +75,13 @@ def call_gemini(prompt, model="gemini-1.5-pro", api_key=None):
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         res_data = response.json()
+        
+        # Log usage
+        usage = res_data.get("usageMetadata", {})
+        input_tokens = usage.get("promptTokenCount", 0)
+        output_tokens = usage.get("candidatesTokenCount", 0)
+        log_api_usage("Gemini", model, input_tokens, output_tokens)
+        
         return res_data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
         print(f"Gemini API call failed: {e}")
@@ -76,6 +109,14 @@ def call_deepseek(prompt, system_instruction, model="deepseek-chat", api_key=Non
             messages=messages,
             temperature=0.2 if model != "deepseek-reasoner" else None
         )
+        
+        # Log usage
+        usage = response.usage
+        if usage:
+            input_tokens = usage.prompt_tokens
+            output_tokens = usage.completion_tokens
+            log_api_usage("DeepSeek", model, input_tokens, output_tokens)
+            
         return response.choices[0].message.content
     except Exception as e:
         print(f"DeepSeek API call failed: {e}")
