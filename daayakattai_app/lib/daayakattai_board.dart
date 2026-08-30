@@ -70,7 +70,8 @@ class DaayakattaiBoardGeometry {
     int startRow = 0;
     int startCol = 0;
 
-    switch (playerId) {
+    final int teamId = playerId % 4;
+    switch (teamId) {
       case 0: // Red: Top-Left (1,1) to (2,2)
         startRow = 1;
         startCol = 1;
@@ -89,11 +90,31 @@ class DaayakattaiBoardGeometry {
         break;
     }
 
-    // Distribute 4 pieces in the 2x2 grid
-    final int rowOffset = pieceId ~/ 2;
-    final int colOffset = pieceId % 2;
+    final double cellW = boardRect.width / _gridSize;
+    final double cellH = boardRect.height / _gridSize;
+    final Offset cornerCenter = Offset(
+      boardRect.left + (startCol + 1.0) * cellW,
+      boardRect.top + (startRow + 1.0) * cellH,
+    );
 
-    return cellCenter(boardRect, startRow + rowOffset, startCol + colOffset);
+    // Stagger layout based on player count
+    if (playerId < 4) {
+      // 4-player or less: nice big 2x2 grid
+      final int row = pieceId ~/ 2;
+      final int col = pieceId % 2;
+      final double dx = (col - 0.5) * cellW * 0.45;
+      final double dy = (row - 0.5) * cellH * 0.45;
+      return cornerCenter + Offset(dx, dy);
+    } else {
+      // 6, 8, 12 players: compact 3x4 grid to fit up to 12 pieces in the corner
+      final int playerRank = playerId ~/ 4;
+      final int totalRank = playerRank * 4 + pieceId;
+      final int row = totalRank ~/ 4;
+      final int col = totalRank % 4;
+      final double dx = (col - 1.5) * cellW * 0.28;
+      final double dy = (row - 1.0) * cellH * 0.28;
+      return cornerCenter + Offset(dx, dy);
+    }
   }
 }
 
@@ -581,6 +602,8 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
         return '6 Players (3v2)';
       case GameMode.eightPlayerTeams:
         return '8 Players (4v2)';
+      case GameMode.twelvePlayerTeams:
+        return '12 Players (4v3)';
     }
   }
 

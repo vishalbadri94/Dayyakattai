@@ -11,6 +11,7 @@ enum GameMode {
   fourPlayerTeams,
   sixPlayerTeams,
   eightPlayerTeams,
+  twelvePlayerTeams,
 }
 
 class BoardCoordinate {
@@ -403,6 +404,21 @@ class DaayakattaiGame {
           Player(5, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
           Player(6, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
           Player(7, 3, Board.startOuterIndices[3], Board.innerPaths[3]),
+        ];
+      case GameMode.twelvePlayerTeams:
+        return [
+          Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(1, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(2, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(3, 3, Board.startOuterIndices[3], Board.innerPaths[3]),
+          Player(4, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(5, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(6, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(7, 3, Board.startOuterIndices[3], Board.innerPaths[3]),
+          Player(8, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(9, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(10, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(11, 3, Board.startOuterIndices[3], Board.innerPaths[3]),
         ];
     }
   }
