@@ -59,6 +59,7 @@ void main() {
     test('Should update career profiles automatically when a match is logged', () async {
       final matchStats = <String, PlayerMatchStats>{
         'p1': PlayerMatchStats(
+          teamId: 0,
           rollsCount: 20,
           dhavamsRolled: 3,
           pannirendusRolled: 1,

@@ -652,6 +652,7 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
         profileId = widget.initialProfiles![i].id;
       }
       playerStats[profileId] = PlayerMatchStats(
+        teamId: _game.players[i].teamId,
         rollsCount: 15,
         dhavamsRolled: 2,
         pannirendusRolled: 1,

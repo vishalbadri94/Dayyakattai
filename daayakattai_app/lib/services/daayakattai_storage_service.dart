@@ -76,6 +76,7 @@ class FamilyGroup {
 }
 
 class PlayerMatchStats {
+  final int teamId;
   final int rollsCount;
   final int dhavamsRolled;
   final int pannirendusRolled;
@@ -83,6 +84,7 @@ class PlayerMatchStats {
   final int piecesFinished;
 
   PlayerMatchStats({
+    required this.teamId,
     required this.rollsCount,
     required this.dhavamsRolled,
     required this.pannirendusRolled,
@@ -91,6 +93,7 @@ class PlayerMatchStats {
   });
 
   Map<String, dynamic> toJson() => {
+        'teamId': teamId,
         'rollsCount': rollsCount,
         'dhavamsRolled': dhavamsRolled,
         'pannirendusRolled': pannirendusRolled,
@@ -99,6 +102,7 @@ class PlayerMatchStats {
       };
 
   factory PlayerMatchStats.fromJson(Map<String, dynamic> json) => PlayerMatchStats(
+        teamId: json['teamId'] as int? ?? 0,
         rollsCount: json['rollsCount'] as int? ?? 0,
         dhavamsRolled: json['dhavamsRolled'] as int? ?? 0,
         pannirendusRolled: json['pannirendusRolled'] as int? ?? 0,
@@ -232,13 +236,23 @@ class DaayakattaiStorageService {
     }
   }
 
+  static const int _maxMatchHistory = 100;
+
   static Future<void> logMatch(MatchRecord record) async {
     final list = await getMatchHistory();
     list.add(record);
+    
+    // 1. Limit match history size to 100 to prevent unbounded growth
+    if (list.length > _maxMatchHistory) {
+      list.removeRange(0, list.length - _maxMatchHistory);
+    }
+    
     await _storage.write(key: _keyMatches, value: jsonEncode(list.map((m) => m.toJson()).toList()));
 
-    // Automatically update individual career profiles with match stats
+    // 2. Batch update profiles and write to disk once (Avoid N+1 write operations)
     final profiles = await getProfiles();
+    bool profilesChanged = false;
+
     record.statsPerPlayer.forEach((playerId, matchStats) {
       final idx = profiles.indexWhere((p) => p.id == playerId);
       if (idx != -1) {
@@ -247,14 +261,18 @@ class DaayakattaiStorageService {
         p.dhavamsRolled += matchStats.dhavamsRolled;
         p.cutsMade += matchStats.piecesCut;
         
-        // Calculate wins (determine if player belongs to winning team)
-        // Note: For simplicity, check if the match gameMode has teams and player seat mapping
-        // Inside this mock service, we assign win based on team verification
-        p.gamesWon += 1; // Default incremental win verification mock
+        // 3. Fix Win Logic: Only increment wins if player's team matches winner team
+        if (matchStats.teamId == record.winnerTeamId) {
+          p.gamesWon++;
+        }
         
-        saveProfile(p);
+        profilesChanged = true;
       }
     });
+
+    if (profilesChanged) {
+      await _storage.write(key: _keyProfiles, value: jsonEncode(profiles.map((p) => p.toJson()).toList()));
+    }
   }
 
   // --- Mock initial data loaders ---
