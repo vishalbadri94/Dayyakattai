@@ -14,10 +14,10 @@ import 'package:permission_handler/permission_handler.dart';
 class AgoraVideoHeader extends StatefulWidget {
   const AgoraVideoHeader({
     super.key,
-    required this.appId,
+    this.appId = '',
     required this.channelName,
-    required this.token,
-    required this.localUid,
+    this.token = '',
+    this.localUid = 1000,
     this.avatarRadius = 36,
   });
 
@@ -71,6 +71,10 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
 
   Future<void> _initAgora() async {
     if (_initializing) return;
+    if (widget.appId.isEmpty) {
+      debugPrint('Agora App ID not provided. Running in placeholder mode.');
+      return;
+    }
     _initializing = true;
 
     try {
