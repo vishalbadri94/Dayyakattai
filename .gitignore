@@ -1,0 +1,36 @@
+# Python Virtual Environment
+venv/
+__pycache__/
+*.pyc
+
+# Local Credentials / Secret API Keys
+deepseek api
+.env
+*.key
+*.pem
+
+# Editor Settings & IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS Specific Files
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Flutter/Dart build outputs (inside daayakattai_app)
+daayakattai_app/.dart_tool/
+daayakattai_app/.packages
+daayakattai_app/.flutter-plugins
+daayakattai_app/.flutter-plugins-dependencies
+daayakattai_app/build/
+daayakattai_app/pubspec.lock

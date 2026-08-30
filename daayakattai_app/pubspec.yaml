@@ -1,0 +1,40 @@
+name: daayakattai_app
+description: "A traditional South Indian Daayakattai (Dhayam) mobile board game app with video calling and grandparent-friendly onboarding."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Voice & Video RTC
+  agora_rtc_engine: ^6.3.0
+  
+  # Permissions (Camera/Mic)
+  permission_handler: ^11.3.0
+  
+  # Deep Link Handling
+  app_links: ^6.1.1
+  
+  # Persistent Local Secure Storage
+  flutter_secure_storage: ^9.0.0
+  
+  # WhatsApp / General System Sharing
+  share_plus: ^9.0.0
+  
+  # URL Launching (WhatsApp Intents)
+  url_launcher: ^6.3.0
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

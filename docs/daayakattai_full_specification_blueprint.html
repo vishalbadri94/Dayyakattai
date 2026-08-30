@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {
+        size: A4;
+        margin: 14mm 14mm;
+        background-color: #fbf8f3;
+        @bottom-right {
+            content: "Page " counter(page) " of " counter(pages);
+            font-size: 8pt;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #7d6356;
+        }
+        @bottom-left {
+            content: "Family Daayakattai (Dhayam) • Master Product & Technical Blueprint";
+            font-size: 8pt;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #7d6356;
+        }
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #2b221e;
+        background-color: #fbf8f3;
+        line-height: 1.45;
+        font-size: 9pt;
+    }
+
+    .cover-card {
+        background: linear-gradient(135deg, #581616 0%, #3e0c0c 100%);
+        color: #fff9f0;
+        padding: 24px 28px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-bottom: 5px solid #d4af37;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .cover-card h1 {
+        margin: 0 0 6px 0;
+        font-size: 21pt;
+        color: #fff9f0;
+        font-weight: 800;
+        letter-spacing: -0.4px;
+    }
+
+    .cover-card .subtitle {
+        margin: 0;
+        font-size: 10.5pt;
+        color: #fce1b8;
+        line-height: 1.4;
+    }
+
+    .meta-table {
+        width: 100%;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(252, 225, 184, 0.25);
+        display: table;
+    }
+
+    .meta-cell {
+        display: table-cell;
+        width: 25%;
+        font-size: 8pt;
+        color: #f7e6d0;
+    }
+
+    .meta-cell strong {
+        color: #ffffff;
+        display: block;
+        font-size: 8.5pt;
+        margin-bottom: 2px;
+    }
+
+    h2 {
+        color: #581616;
+        font-size: 13pt;
+        margin-top: 22px;
+        margin-bottom: 8px;
+        border-left: 4px solid #d4af37;
+        padding-left: 8px;
+        page-break-after: avoid;
+    }
+
+    h3 {
+        color: #7a261c;
+        font-size: 10pt;
+        margin-top: 12px;
+        margin-bottom: 4px;
+        page-break-after: avoid;
+    }
+
+    p {
+        margin-top: 0;
+        margin-bottom: 8px;
+    }
+
+    ul, ol {
+        margin-top: 0;
+        margin-bottom: 10px;
+        padding-left: 18px;
+    }
+
+    li {
+        margin-bottom: 4px;
+    }
+
+    .card {
+        background-color: #ffffff;
+        border: 1px solid #e8dbce;
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        page-break-inside: avoid;
+    }
+
+    .card-highlight {
+        background-color: #fdf6ec;
+        border: 1px solid #e4c498;
+        border-left: 4px solid #d4af37;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8pt;
+        background-color: #ffffff;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        page-break-inside: avoid;
+    }
+
+    th {
+        background-color: #581616;
+        color: #ffffff;
+        text-align: left;
+        padding: 6px 8px;
+        font-weight: 600;
+        border: 1px solid #581616;
+    }
+
+    td {
+        padding: 5.5px 8px;
+        border: 1px solid #e8dbce;
+        vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+        background-color: #faf5ed;
+    }
+
+    .prompt-box {
+        background-color: #211a18;
+        color: #f5eedb;
+        padding: 10px 12px;
+        border-radius: 5px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 7.8pt;
+        margin-bottom: 10px;
+        line-height: 1.35;
+        white-space: pre-wrap;
+        border-left: 4px solid #d4af37;
+        page-break-inside: avoid;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 7pt;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .badge-free {
+        background-color: #e2f5e0;
+        color: #1a6e16;
+        border: 1px solid #b7e8b2;
+    }
+
+    .badge-ai {
+        background-color: #e8f0fe;
+        color: #1967d2;
+        border: 1px solid #c2d7fa;
+    }
+
+    .badge-paid {
+        background-color: #fce8e6;
+        color: #c5221f;
+        border: 1px solid #f7c1bc;
+    }
+
+    .two-col {
+        display: table;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .col {
+        display: table-cell;
+        width: 50%;
+        vertical-align: top;
+        padding-right: 8px;
+    }
+
+    .col:last-child {
+        padding-right: 0;
+        padding-left: 8px;
+    }
+
+    .step-box {
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        background-color: #ffffff;
+        border-left: 3px solid #7a261c;
+        border-top: 1px solid #e8dbce;
+        border-right: 1px solid #e8dbce;
+        border-bottom: 1px solid #e8dbce;
+        border-radius: 3px;
+        page-break-inside: avoid;
+    }
+
+    .step-title {
+        font-weight: bold;
+        color: #581616;
+        font-size: 8.8pt;
+        margin-bottom: 3px;
+    }
+</style>
+</head>
+<body>
+
+<div class="cover-card">
+    <h1>Family Daayakattai (Dhayam) Mobile App</h1>
+    <div class="subtitle">Complete Technical Specification, Senior-Friendly UX Engine, AI Coding Prompts & Deployment Blueprint</div>
+    <div class="meta-table">
+        <div class="meta-cell">
+            <strong>TARGET PLATFORMS</strong>
+            Android & iOS (Flutter)
+        </div>
+        <div class="meta-cell">
+            <strong>CORE AUDIENCE</strong>
+            Grandparents & Intergenerational
+        </div>
+        <div class="meta-cell">
+            <strong>COMMUNICATION</strong>
+            Agora RTC (Audio + 240p Video)
+        </div>
+        <div class="meta-cell">
+            <strong>OPERATING COST</strong>
+            $0 / month (0–10k Active Users)
+        </div>
+    </div>
+</div>
+
+<h2>1. Executive Product Overview & Problem Statement</h2>
+<p>
+Traditional South Indian <strong>Daayakattai (Dhayam)</strong> is an ancient 7×7 grid strategy game played across generations during family gatherings. While modern digital board game apps exist, they consistently fail elderly family members (grandparents) due to:
+</p>
+<ul>
+    <li><strong>High Friction Onboarding:</strong> Email logins, OTPs, passwords, and 6-character room PIN codes that older adults struggle to remember or type.</li>
+    <li><strong>Aggressive Monetization & Dark Patterns:</strong> Full-screen interstitial ads with tiny close buttons that trap seniors on unwanted web pages.</li>
+    <li><strong>Disconnected Calling:</strong> The separation of gameplay from video/voice calls (requiring multiple devices or clunky picture-in-picture modes).</li>
+    <li><strong>Lack of Visual Guidance:</strong> Unclear game states where older eyes cannot distinguish valid moves or understand entry requirements.</li>
+</ul>
+<p>
+<strong>The Solution:</strong> A dedicated, ad-free, culturally authentic family communication app disguised as a traditional Daayakattai board. With one-tap WhatsApp deep links, call-style incoming push notifications, automatic video anchoring, and permanent one-time family profile setup, grandparents can play with their loved ones with zero technical stress.
+</p>
+
+<h2>2. Complete Zero-Cost Cloud Architecture</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Layer</th>
+            <th>Recommended Technology</th>
+            <th>Tier & Quota</th>
+            <th>Role in Application</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Cross-Platform Client</strong></td>
+            <td><strong>Flutter (Dart)</strong></td>
+            <td><span class="badge badge-free">Free & Open Source</span></td>
+            <td>Single codebase rendering 60 FPS cloth board animations, audio FX, haptics, and WebRTC video tiles.</td>
+        </tr>
+        <tr>
+            <td><strong>Realtime Database</strong></td>
+            <td><strong>Supabase</strong> / Firebase Spark</td>
+            <td><span class="badge badge-free">Free (Up to 50k MAU)</span></td>
+            <td>Low-latency WebSocket channel synchronizing dice rolls, board state, captured tokens, and active turns.</td>
+        </tr>
+        <tr>
+            <td><strong>Voice / Video RTC</strong></td>
+            <td><strong>Agora RTC SDK</strong></td>
+            <td><span class="badge badge-free">10,000 Free Min / Month</span></td>
+            <td>Provides crystal-clear audio and low-bandwidth 240p @ 15fps video streams anchored to player corners.</td>
+        </tr>
+        <tr>
+            <td><strong>Call-Style Push Alerts</strong></td>
+            <td><strong>Firebase Cloud Messaging (FCM)</strong></td>
+            <td><span class="badge badge-free">100% Free Unlimited</span></td>
+            <td>Triggers full-screen incoming call ringtones on grandparents' phones ("Ananya is calling to play!").</td>
+        </tr>
+        <tr>
+            <td><strong>Universal Deep Links</strong></td>
+            <td><strong>Cloudflare Pages</strong></td>
+            <td><span class="badge badge-free">100% Free</span></td>
+            <td>Hosts <code>assetlinks.json</code> and Apple Association files for one-tap WhatsApp link execution.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>3. Daayakattai 7×7 Game Rules & State Machine</h2>
+<p>
+The game is played on a 7×7 grid (49 squares) using two 4-sided brass stick dice (*Kattai*) with dot values <strong>0, 1, 2, 3</strong>.
+</p>
+
+<div class="two-col">
+    <div class="col">
+        <h3>Dice Roll Calculation & Bonus Rules</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Dice Faces</th>
+                    <th>Total Sum</th>
+                    <th>Bonus Roll?</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0 + 0</td><td><strong>12 (Pannirendu)</strong></td><td><span class="badge badge-free">YES</span></td></tr>
+                <tr><td>0 + 1</td><td><strong>1 (Dhayam)</strong></td><td><span class="badge badge-free">YES</span></td></tr>
+                <tr><td>0 + 2 / 1 + 1</td><td><strong>2 (Rendu)</strong></td><td>NO</td></tr>
+                <tr><td>0 + 3 / 1 + 2</td><td><strong>3 (Moonu)</strong></td><td>NO</td></tr>
+                <tr><td>1 + 3 / 2 + 2</td><td><strong>4 (Naangu)</strong></td><td>NO</td></tr>
+                <tr><td>2 + 3</td><td><strong>5 (Ainthu)</strong></td><td><span class="badge badge-free">YES</span></td></tr>
+                <tr><td>3 + 3</td><td><strong>6 (Aaru)</strong></td><td><span class="badge badge-free">YES</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <h3>Core Game Mechanics</h3>
+        <ul>
+            <li><strong>Entry Condition:</strong> Coins start in home base. A roll of <strong>1 (Dhayam)</strong> is strictly required to move a coin out onto the player's home square.</li>
+            <li><strong>Outer Lap:</strong> Coins traverse the outer perimeter (24 squares) counter-clockwise.</li>
+            <li><strong>Malai (Safe Squares):</strong> The 9 cross-marked squares (diamond pattern) are safe. Coins on safe squares cannot be cut.</li>
+            <li><strong>Vettu (Capture):</strong> Landing on an opponent on an unsafe cell captures their coin and sends it home.</li>
+            <li><strong>Pazham (Inner Track & Goal):</strong> A player must execute at least <strong>1 Vettu</strong> before their coins can turn into the inner spiral lane toward the center goal (*Pazham*).</li>
+        </ul>
+    </div>
+</div>
+
+<h2>4. Master Prompts for AI Coding Assistants (Cursor / DeepSeek / Gemini)</h2>
+<p>
+Use these modular prompts sequentially in <strong>Cursor IDE</strong>, <strong>DeepSeek R1</strong>, or <strong>Gemini CLI</strong> to generate the complete codebase without writing code manually:
+</p>
+
+<div class="prompt-box">### PROMPT 1: PURE DART GAME ENGINE (daayakattai_engine.dart)
+"You are a Senior Game Architect. Write a complete, standalone Dart engine for 7x7 Daayakattai without UI dependencies:
+1. Dice Logic: Roll two 4-sided brass dice with sides [0, 1, 2, 3]. Sums: (0,0)->12, (0,1)->1, (0,2/1,1)->2, (0,3/1,2)->3, (1,3/2,2)->4, (2,3)->5, (3,3)->6. Rolls of 1, 5, 6, 12 grant an extra roll to a pending roll queue.
+2. Track Coordinate Map: Model the 7x7 grid. Outer track has 24 cells. Safe cells (Malai) are at the 9 symmetric cross positions.
+3. Movement Logic: Validate that un-entered pieces can only deploy on a roll of 1 (Dhayam). Track player cut history (hasVettu). Unlock inner Pazham track only if hasVettu == true.
+4. Support 2-player and 4-player 2v2 partner team modes where team members cannot cut each other."</div>
+
+<div class="prompt-box">### PROMPT 2: SENIOR-CENTRIC FLUTTER BOARD UI (daayakattai_board.dart)
+"Create a Flutter CustomPainter widget named `DaayakattaiBoardPainter` rendering a traditional South Indian 7x7 cloth board:
+1. Visuals: Warm deep madder red (#581616) raw silk background with antique cream grid cells, brass-embossed borders, and hand-drawn lotus symbols on the 9 safe cross cells.
+2. Piece Rendering: Render bell-shaped brass pawns with team-colored ring inlays (Red, Blue, Green, Yellow).
+3. Senior Accessibility: When a roll is made, highlight all valid selectable pawns with a pulsating 3px emerald green glow. Tapping any piece automatically executes the legal move with smooth 300ms Tween animations.
+4. Extra-Large Rolling Button: Render a 64dp high brass roll button across the bottom with Tamil and English labels."</div>
+
+<div class="prompt-box">### PROMPT 3: AGORA RTC VIDEO AVATAR INTEGRATION (agora_video_header.dart)
+"Write a Flutter widget using `agora_rtc_engine` for 4-player family board games:
+1. Layout: Place 4 circular video bubbles (radius 36dp) anchored near each player's board corner.
+2. Low Bandwidth Mode: Configure video stream preset to 240p resolution at 15 FPS with audio-first priority to ensure seamless operation on budget smartphones and 3G/4G networks.
+3. Active Speaker Feedback: Subscribe to `onAudioVolumeIndication` and display an animated glowing border around the speaking player. Include simple one-tap Mute Mic and Toggle Camera controls."</div>
+
+<div class="prompt-box">### PROMPT 4: WHATSAPP DEEP-LINKING & ZERO-CODE ONBOARDING (family_invite_service.dart)
+"Write a Flutter service using `app_links`, `share_plus`, and `flutter_secure_storage`:
+1. Generate Invite: Construct signed link: https://dhayam.app/join?room=ROOM_ID. Send via WhatsApp intent: 'Namaste! Thatha is inviting you to play Daayakattai with video: https://dhayam.app/join?room=ROOM_ID'.
+2. Deep Link Handler: On launch, parse `room` query parameter and navigate straight to active GameView, bypassing all login screens.
+3. Delegated Profile: Save display name and pinned family circle in local secure storage permanently so older users are never logged out."</div>
+
+<h2>5. Nano Banana Asset Generation Prompts</h2>
+<p>
+Pass these prompts into <strong>Google AI Studio / Gemini 3 Image (Nano Banana Pro)</strong> to generate all authentic graphic assets:
+</p>
+
+<div class="card card-highlight">
+    <strong>Asset 1: 7×7 Traditional Embroidered Board (Top-Down Orthographic)</strong>
+    <div class="prompt-box">"Top-down orthographic 2D view of a traditional South Indian Daayakattai 7x7 square cloth board game (Kattam). Woven heavy raw silk texture in deep rustic madder red (#581616) and antique cream (#FFF8E7). Intricate hand-embroidered golden borders. Clear 7x7 grid lines with cross-hatch 'X' motifs embroidered on the 9 sacred safe squares (Malai/Kottai) and a radiating lotus mandala embroidered in the center square (Pazham). High contrast, authentic folk art detailing, flat lay, sharp focus, 4K resolution, 1:1 aspect ratio."</div>
+</div>
+
+<div class="card card-highlight">
+    <strong>Asset 2: 4-Sided Brass Stick Dice (Kattai Pair)</strong>
+    <div class="prompt-box">"Product photography of a pair of traditional South Indian Daayakattai solid brass stick dice (Dhayam Kattai). Long rectangular cuboid form with beveled corners, warm polished antique brass patina with dark engravings. Face 1 shows 1 stamped circular dot; Face 2 shows 2 dots; Face 3 shows 3 dots; Face 4 is blank. Resting on dark teak wood surface, casting soft shadows. Photorealistic, macro studio lighting, 8k resolution, 16:9 aspect ratio."</div>
+</div>
+
+<div class="card card-highlight">
+    <strong>Asset 3: Conical Brass Pawns (Kaai)</strong>
+    <div class="prompt-box">"Game asset set of 4 traditional South Indian brass board game pawns (Daayakattai Kaai). Distinctive miniature temple gopuram and bell-shaped lathe-turned solid brass tokens with colored lacquer inlay rings: Ruby Red, Emerald Green, Royal Cobalt Blue, and Deep Saffron Yellow. Clean matte finish, isometric view, uniform soft shadow, isolated on neutral warm beige background, game-ready UI sprite sheet, 4K resolution."</div>
+</div>
+
+<h2>6. Complete Database Schema (Supabase PostgreSQL)</h2>
+<div class="prompt-box">-- SUPABASE DATABASE SETUP SCRIPT
+CREATE TABLE public.game_rooms (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    status TEXT DEFAULT 'waiting' CHECK (status IN ('waiting', 'in_progress', 'completed')),
+    active_player_index INT DEFAULT 0,
+    pending_roll_queue INT[] DEFAULT '{}',
+    board_state JSONB NOT NULL DEFAULT '{
+        "players": [
+            {"id": "p1", "name": "Thatha", "team": 1, "tokens": [-1,-1,-1,-1], "hasVettu": false},
+            {"id": "p2", "name": "Rohan", "team": 2, "tokens": [-1,-1,-1,-1], "hasVettu": false},
+            {"id": "p3", "name": "Paati", "team": 1, "tokens": [-1,-1,-1,-1], "hasVettu": false},
+            {"id": "p4", "name": "Maya", "team": 2, "tokens": [-1,-1,-1,-1], "hasVettu": false}
+        ],
+        "safe_squares": [3, 9, 15, 21, 27, 33, 39, 45, 24]
+    }',
+    agora_channel_token TEXT
+);
+
+-- Enable Realtime WebSockets on game_rooms
+ALTER PUBLICATION supabase_realtime ADD TABLE public.game_rooms;</div>
+
+<h2>7. Testing & Quality Assurance Plan</h2>
+<div class="step-box">
+    <div class="step-title">1. Low-End Hardware & Thermal Testing</div>
+    Test on entry-level Android devices (2GB–3GB RAM, budget MediaTek/Snapdragon chipsets). Verify that Flutter renders at a stable 60 FPS and that Agora 240p video calling does not cause thermal throttling or rapid battery drain.
+</div>
+<div class="step-box">
+    <div class="step-title">2. Network Degradation & Audio Resilience</div>
+    Simulate throttled 3G networks and 20% packet loss. Ensure the app prioritizes voice audio stream uninterrupted, automatically dropping video frames if necessary without disconnecting the match.
+</div>
+<div class="step-box">
+    <div class="step-title">3. Grandparent "10-Second" Usability Benchmark</div>
+    Conduct live testing with non-tech-savvy seniors over 60 years old. A grandparent should be able to accept an incoming invite and roll the dice within 10 seconds of receiving a notification, without asking for verbal assistance.
+</div>
+
+<h2>8. Publishing Requirements & 1st-Year Budget Summary</h2>
+<div class="two-col">
+    <div class="col">
+        <h3>Publishing Steps</h3>
+        <ul>
+            <li><strong>Google Play Store:</strong> $25 one-time developer registration. Requires completing a 14-day closed test with 12–20 testers for new personal accounts.</li>
+            <li><strong>Apple App Store:</strong> $99/year Apple Developer Program. Requires privacy justification strings for Camera and Microphone usage in <code>Info.plist</code>.</li>
+            <li><strong>Privacy Policy:</strong> Free hosting on Cloudflare Pages explaining that camera/mic streams are peer-to-peer ephemeral and never recorded.</li>
+        </ul>
+    </div>
+    <div class="col">
+        <h3>Cost Summary Matrix</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Upfront</th>
+                    <th>Monthly</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Flutter & VS Code / Cursor</td><td>$0</td><td>$0</td></tr>
+                <tr><td>Supabase Realtime (Free Tier)</td><td>$0</td><td>$0</td></tr>
+                <tr><td>Agora Video (10k min/mo)</td><td>$0</td><td>$0</td></tr>
+                <tr><td>Domain & Cloudflare Links</td><td>~$10</td><td>$0</td></tr>
+                <tr><td>Google Play License</td><td>$25</td><td>$0</td></tr>
+                <tr><td>Apple Developer License</td><td>$99</td><td>$0</td></tr>
+                <tr style="font-weight:bold; background-color:#fdf6ec;">
+                    <td>TOTAL FIRST YEAR</td>
+                    <td>~$134</td>
+                    <td>$0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h2>9. First-Weekend Quickstart Execution Checklist</h2>
+<ol>
+    <li><strong>Setup Flutter & Cursor IDE:</strong> Run <code>flutter create --org com.dhayam daayakattai_app</code>.</li>
+    <li><strong>Generate Engine:</strong> Paste <strong>Prompt 1</strong> into DeepSeek R1 to generate <code>daayakattai_engine.dart</code>.</li>
+    <li><strong>Generate UI:</strong> Paste <strong>Prompt 2</strong> into Claude 3.7 / Cursor to generate the <code>DaayakattaiBoardPainter</code>.</li>
+    <li><strong>Generate Graphic Assets:</strong> Copy the 3 <strong>Nano Banana</strong> prompts into Google AI Studio to get high-res board textures, brass dice, and pawns.</li>
+    <li><strong>Wire Agora & Supabase:</strong> Paste <strong>Prompts 3 & 4</strong> to enable video calling and WhatsApp invites. Run <code>flutter run</code> on your phone!</li>
+</ol>
+
+</body>
+</html>
