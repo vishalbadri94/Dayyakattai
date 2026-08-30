@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../daayakattai_engine.dart';
 import '../daayakattai_board.dart';
 import '../services/daayakattai_storage_service.dart';
+import '../agora_video_header.dart';
 
 class GameSetupScreen extends StatefulWidget {
   const GameSetupScreen({super.key});
@@ -301,10 +302,25 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                                 title: Text(_modeLabel(_selectedMode), style: const TextStyle(color: Color(0xFFF1E4C4), fontWeight: FontWeight.bold)),
                                 backgroundColor: const Color(0xFF3F0E0E),
                                 elevation: 0,
+                                leading: IconButton(
+                                  icon: const Icon(Icons.close, color: Color(0xFFF1E4C4)),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
                               ),
-                              body: DaayakattaiBoard(
-                                initialMode: _selectedMode,
-                                initialProfiles: profiles,
+                              body: SafeArea(
+                                child: Column(
+                                  children: [
+                                    AgoraVideoHeader(channelName: 'family-daayakattai-room'),
+                                    Expanded(
+                                      child: DaayakattaiBoard(
+                                        initialMode: _selectedMode,
+                                        initialProfiles: profiles,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
