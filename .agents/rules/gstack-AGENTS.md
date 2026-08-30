@@ -9,7 +9,8 @@ Adhere to these rules when planning, designing, or implementing features in this
 ## 2. Confusion Protocol (Anti-Guessing)
 * If there is an architectural ambiguity or lack of clarity regarding a traditional rule (e.g., team-mode capture coordinates), DO NOT guess. Stop and ask the user for clarification.
 
-## 3. Premium Design (No AI Slop)
+## 3. Premium Design (No AI Slop - Gemini Nano Target)
+* All client-side theme suggestion algorithms, font scaling configurations, and accessibility color contrast calculations are delegated to **Gemini Nano** rules for local mobile execution.
 * Avoid generic material buttons, plain borders, and flat primary colors.
 * Build bespoke, visually striking components (e.g., custom silk board rendering, bell-shaped lathe pawns, and smooth linear gradients). Every screen must feel premium and state-of-the-art.
 

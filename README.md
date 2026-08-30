@@ -80,3 +80,13 @@ This workspace is pre-loaded with **Agentic Skills** in the `.agents/` folder. A
 * **[`grandparent-accessibility`](file:///c:/Users/visha/Desktop/Dayyakattai/.agents/skills/grandparent-accessibility/SKILL.md)**: Enforces senior readability (minimum target sizes $\ge 64$dp, large font styles, Tamil localization).
 * **[`agora-rtc-lifecycle`](file:///c:/Users/visha/Desktop/Dayyakattai/.agents/skills/agora-rtc-lifecycle/SKILL.md)**: Guarantees correct background behavior, mic/camera requests, and hardware cleanup.
 * **[`gstack-AGENTS.md`](file:///c:/Users/visha/Desktop/Dayyakattai/.agents/rules/gstack-AGENTS.md)**: YC startup-ethos rules for scope minimization, high-end aesthetics, and anti-guessing.
+
+---
+
+## 📱 On-Device AI: Gemini Nano Integration
+For real-time accessibility, theme suggestions, and on-device design auditing:
+* **Gemini Nano**: Targeted for execution directly on-device (via Android AICore / Google Play Services) to handle:
+  * **Grandparent Assist**: Real-time voice guidance and step explanations in Tamil/English locally without network latency.
+  * **Dynamic Accessibility Theming**: Auto-adjusting UI contrast ratios and layout text scaling factors based on ambient lighting conditions and user fatigue.
+  * **Privacy-First AI**: Handles all user profile configurations and pass-and-play voice assistance completely offline.
+
