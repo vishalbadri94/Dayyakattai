@@ -7,29 +7,31 @@ void main() {
 
   // Setup FlutterSecureStorage mock before running tests
   setUpAll(() {
-    const channel = MethodChannel('plugins.it_lms.com/flutter_secure_storage');
+    const channel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
     final Map<String, String> mockValues = {};
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       final args = methodCall.arguments as Map?;
-      if (methodCall.method == 'write') {
-        final key = args?['key'] as String;
-        final val = args?['value'] as String;
-        mockValues[key] = val;
-        return true;
-      } else if (methodCall.method == 'read') {
-        final key = args?['key'] as String;
-        return mockValues[key];
-      } else if (methodCall.method == 'delete') {
-        final key = args?['key'] as String;
-        mockValues.remove(key);
-        return true;
-      } else if (methodCall.method == 'clear') {
-        mockValues.clear();
-        return true;
+      switch (methodCall.method) {
+        case 'write':
+          final key = args?['key'] as String;
+          final val = args?['value'] as String;
+          mockValues[key] = val;
+          return null; // Success response
+        case 'read':
+          final key = args?['key'] as String;
+          return mockValues[key] ?? ''; // Return empty string if not found
+        case 'delete':
+          final key = args?['key'] as String;
+          mockValues.remove(key);
+          return null; // Success response
+        case 'clear':
+          mockValues.clear();
+          return null; // Success response
+        default:
+          return null;
       }
-      return null;
     });
   });
 
