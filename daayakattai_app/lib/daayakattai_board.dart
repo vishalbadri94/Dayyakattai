@@ -343,7 +343,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
           // Draw home/finished pieces without stacking logic
           final radius = math.min(cellW, cellH) * 0.28;
           final bool selected = validPieceKeys.contains(key);
-          _drawBellPawn(canvas, center, radius, _teamColor(player.id), selected);
+          _drawBellPawn(canvas, center, radius, _teamColor(player.teamId), selected);
         }
       }
     }
@@ -361,13 +361,13 @@ class DaayakattaiBoardPainter extends CustomPainter {
 
         final double radius = math.min(cellW, cellH) * 0.26;
         final bool selected = validPieceKeys.contains(key);
-        _drawBellPawn(canvas, stackCenter, radius, _teamColor(piece.owner.id), selected);
+        _drawBellPawn(canvas, stackCenter, radius, _teamColor(piece.owner.teamId), selected);
       }
     });
   }
 
-  Color _teamColor(int playerId) {
-    switch (playerId) {
+  Color _teamColor(int teamId) {
+    switch (teamId) {
       case 0: return const Color(0xFFD62E2E);
       case 1: return const Color(0xFF2E6FD6);
       case 2: return const Color(0xFF2E9E4F);
@@ -518,7 +518,8 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
   late final AnimationController _moveController;
   late final CurvedAnimation _moveAnimation;
 
-  late final DaayakattaiGame _game;
+  late DaayakattaiGame _game;
+  GameMode _currentMode = GameMode.fourPlayerTeams;
   Set<String> _validPieceKeys = <String>{}; // formatted as "playerId-pieceId"
   String? _movingPieceKey;
   BoardCoordinate? _moveFromCell;
@@ -530,7 +531,7 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
   @override
   void initState() {
     super.initState();
-    _game = DaayakattaiGame(mode: GameMode.fourPlayerTeams);
+    _game = DaayakattaiGame(mode: _currentMode);
 
     _pulseController = AnimationController(
       vsync: this,
@@ -548,6 +549,39 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
     );
 
     _moveController.addStatusListener(_handleMoveStatus);
+  }
+
+  void _resetGame(GameMode mode) {
+    setState(() {
+      _currentMode = mode;
+      _game = DaayakattaiGame(mode: mode);
+      _validPieceKeys.clear();
+      _movingPieceKey = null;
+      _moveFromCell = null;
+      _moveToCell = null;
+      _targetIndex = null;
+      _pendingMove = null;
+      _lastRoll = null;
+      _pulseController.stop();
+      _pulseController.value = 0;
+    });
+  }
+
+  String _modeLabel(GameMode mode) {
+    switch (mode) {
+      case GameMode.twoPlayer:
+        return '2 Players';
+      case GameMode.threePlayer:
+        return '3 Players';
+      case GameMode.fourPlayer:
+        return '4 Players';
+      case GameMode.fourPlayerTeams:
+        return '4 Players (2v2)';
+      case GameMode.sixPlayerTeams:
+        return '6 Players (3v2)';
+      case GameMode.eightPlayerTeams:
+        return '8 Players (4v2)';
+    }
   }
 
   @override
@@ -651,10 +685,10 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
       if (piece.state == PieceState.home) {
         // Tapped inside the player's 2x2 home corner
         tapped = DaayakattaiBoardGeometry.isUnusedCorner(row, col) &&
-            ((player.id == 0 && row < 3 && col < 3) ||
-             (player.id == 1 && row < 3 && col >= 4) ||
-             (player.id == 2 && row >= 4 && col >= 4) ||
-             (player.id == 3 && row >= 4 && col < 3));
+            ((player.teamId == 0 && row < 3 && col < 3) ||
+             (player.teamId == 1 && row < 3 && col >= 4) ||
+             (player.teamId == 2 && row >= 4 && col >= 4) ||
+             (player.teamId == 3 && row >= 4 && col < 3));
       } else {
         final coord = piece.coordinate;
         tapped = (coord != null && coord.x == row && coord.y == col);
@@ -704,13 +738,43 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
   @override
   Widget build(BuildContext context) {
     final player = _game.currentPlayer;
-    final team = DaayakattaiTeam.values[player.id];
+    final team = DaayakattaiTeam.values[player.teamId];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       child: Column(
         children: [
-          _buildStatusBar(team),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              DropdownButton<GameMode>(
+                value: _currentMode,
+                dropdownColor: const Color(0xFF3F0E0E),
+                underline: const SizedBox(),
+                style: const TextStyle(
+                  color: Color(0xFFF1E4C4),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                onChanged: (val) {
+                  if (val != null) _resetGame(val);
+                },
+                items: GameMode.values.map((mode) {
+                  return DropdownMenuItem<GameMode>(
+                    value: mode,
+                    child: Text(_modeLabel(mode)),
+                  );
+                }).toList(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Color(0xFFF1E4C4)),
+                onPressed: () => _resetGame(_currentMode),
+                tooltip: 'Reset Game',
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          _buildStatusBar(player, team),
           Expanded(
             child: Center(
               child: AspectRatio(
@@ -744,13 +808,14 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
     );
   }
 
-  Widget _buildStatusBar(DaayakattaiTeam team) {
+  Widget _buildStatusBar(Player player, DaayakattaiTeam team) {
     String message;
+    final String playerLabel = 'Player ${player.id + 1} (${team.label})';
     if (_game.needsRoll) {
-      message = '${team.label} — Roll Kattai!';
+      message = '$playerLabel — Roll Kattai!';
     } else if (_game.hasPendingRolls) {
       final rolls = _game.pendingRolls.map((r) => r.value).join(', ');
-      message = 'Rolls: [$rolls] — move a glowing pawn';
+      message = 'Rolls: [$rolls] — $playerLabel move';
     } else {
       message = 'Game Over!';
     }

@@ -4,7 +4,14 @@ import 'dart:math';
 // Daayakattai 7x7 Pure Dart Game Engine
 // ---------------------------------------------------------------------------
 
-enum GameMode { twoPlayer, fourPlayerTeams }
+enum GameMode {
+  twoPlayer,
+  threePlayer,
+  fourPlayer,
+  fourPlayerTeams,
+  sixPlayerTeams,
+  eightPlayerTeams,
+}
 
 class BoardCoordinate {
   final int x;
@@ -56,15 +63,19 @@ class Board {
 
   /// The 9 symmetric cross positions (Malai / safe cells).
   static const Set<BoardCoordinate> malaiCells = {
+    BoardCoordinate(0, 3), // Top starting gate
     BoardCoordinate(1, 3),
     BoardCoordinate(2, 3),
-    BoardCoordinate(3, 3),
+    BoardCoordinate(3, 3), // Center goal
     BoardCoordinate(4, 3),
     BoardCoordinate(5, 3),
+    BoardCoordinate(6, 3), // Bottom starting gate
+    BoardCoordinate(3, 0), // Left starting gate
     BoardCoordinate(3, 1),
     BoardCoordinate(3, 2),
     BoardCoordinate(3, 4),
     BoardCoordinate(3, 5),
+    BoardCoordinate(3, 6), // Right starting gate
   };
 
   /// Inner Pazham track arm for each player index:
@@ -347,18 +358,53 @@ class DaayakattaiGame {
         _players = _createPlayers(mode);
 
   static List<Player> _createPlayers(GameMode mode) {
-    if (mode == GameMode.twoPlayer) {
-      return [
-        Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
-        Player(1, 1, Board.startOuterIndices[2], Board.innerPaths[2]),
-      ];
+    switch (mode) {
+      case GameMode.twoPlayer:
+        return [
+          Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(1, 1, Board.startOuterIndices[2], Board.innerPaths[2]),
+        ];
+      case GameMode.threePlayer:
+        return [
+          Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(1, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(2, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+        ];
+      case GameMode.fourPlayer:
+        return [
+          Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(1, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(2, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(3, 3, Board.startOuterIndices[3], Board.innerPaths[3]),
+        ];
+      case GameMode.fourPlayerTeams:
+        return [
+          Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(1, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(2, 0, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(3, 1, Board.startOuterIndices[3], Board.innerPaths[3]),
+        ];
+      case GameMode.sixPlayerTeams:
+        return [
+          Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(1, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(2, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(3, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(4, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(5, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+        ];
+      case GameMode.eightPlayerTeams:
+        return [
+          Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(1, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(2, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(3, 3, Board.startOuterIndices[3], Board.innerPaths[3]),
+          Player(4, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
+          Player(5, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
+          Player(6, 2, Board.startOuterIndices[2], Board.innerPaths[2]),
+          Player(7, 3, Board.startOuterIndices[3], Board.innerPaths[3]),
+        ];
     }
-    return [
-      Player(0, 0, Board.startOuterIndices[0], Board.innerPaths[0]),
-      Player(1, 1, Board.startOuterIndices[1], Board.innerPaths[1]),
-      Player(2, 0, Board.startOuterIndices[2], Board.innerPaths[2]),
-      Player(3, 1, Board.startOuterIndices[3], Board.innerPaths[3]),
-    ];
   }
 
   // -------------------------------------------------------------------------
