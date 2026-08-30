@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'daayakattai_engine.dart';
 import 'services/daayakattai_storage_service.dart';
 import 'services/daayakattai_audio_service.dart';
+import 'widgets/dice_animation_widget.dart';
+import 'services/daayakattai_share_service.dart';
 
 const int _gridSize = 7;
 
@@ -645,6 +647,8 @@ Widget build(BuildContext context) {
               icon: const Icon(Icons.bug_report, color: Color(0xFFD9A843)),
               onPressed: _showScenarioTester,
             ),
+            IconButton(icon: const Icon(Icons.share, color: Color(0xFFD9A843)), onPressed: () => DaayakattaiShareService.shareGameInvite(channelName: DaayakattaiShareService.generateChannelName(), gameMode: _modeLabel(_currentMode), hostName: 'Host', language: _selectedLanguage == Language.tamil ? 'tamil' : 'english')),
+            const SizedBox(width: 4),
             // Language toggle: TML ↔ ENG
             GestureDetector(
               onTap: () async {
@@ -715,24 +719,34 @@ Widget build(BuildContext context) {
         ),
       ),
       Padding(
-        padding: const EdgeInsets.all(16),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _game.needsRoll ? _rollDice : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD9A843),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          children: [
+            // Animated dice display
+            DiceAnimationWidget(
+              rollValue: _game.currentRoll?.value ?? 0,
+              isRolling: false,
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _game.needsRoll ? _rollDice : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD9A843),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'தாயம் எறி / Roll Dice',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-            child: const Text(
-              'தாயம் எறி / Roll Dice',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
+          ],
         ),
       ),
     ],
