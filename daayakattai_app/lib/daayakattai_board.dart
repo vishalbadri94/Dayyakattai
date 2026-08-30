@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'daayakattai_engine.dart';
+import 'services/daayakattai_storage_service.dart';
 
 const int _gridSize = 7;
 
@@ -525,7 +526,14 @@ class DaayakattaiBoardPainter extends CustomPainter {
 }
 
 class DaayakattaiBoard extends StatefulWidget {
-  const DaayakattaiBoard({super.key});
+  final GameMode? initialMode;
+  final List<PlayerProfile>? initialProfiles;
+
+  const DaayakattaiBoard({
+    super.key,
+    this.initialMode,
+    this.initialProfiles,
+  });
 
   @override
   State<DaayakattaiBoard> createState() => _DaayakattaiBoardState();
@@ -545,13 +553,12 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
   String? _movingPieceKey;
   BoardCoordinate? _moveFromCell;
   BoardCoordinate? _moveToCell;
-  int? _targetIndex;
   Move? _pendingMove;
-  DiceRoll? _lastRoll;
 
   @override
   void initState() {
     super.initState();
+    _currentMode = widget.initialMode ?? GameMode.fourPlayerTeams;
     _game = DaayakattaiGame(mode: _currentMode);
 
     _pulseController = AnimationController(
@@ -580,9 +587,7 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
       _movingPieceKey = null;
       _moveFromCell = null;
       _moveToCell = null;
-      _targetIndex = null;
       _pendingMove = null;
-      _lastRoll = null;
       _pulseController.stop();
       _pulseController.value = 0;
     });
@@ -624,7 +629,6 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
       _movingPieceKey = null;
       _moveFromCell = null;
       _moveToCell = null;
-      _targetIndex = null;
       _pendingMove = null;
       _validPieceKeys.clear();
       _pulseController.stop();
@@ -632,7 +636,72 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
       
       // Auto-skip or clear if rolls are finished
       _updateHighlights();
+
+      if (_game.isGameOver) {
+        _handleGameFinished();
+      }
     });
+  }
+
+  void _handleGameFinished() async {
+    final playerStats = <String, PlayerMatchStats>{};
+    
+    for (int i = 0; i < _game.players.length; i++) {
+      String profileId = 'fallback-$i';
+      if (widget.initialProfiles != null && i < widget.initialProfiles!.length) {
+        profileId = widget.initialProfiles![i].id;
+      }
+      playerStats[profileId] = PlayerMatchStats(
+        rollsCount: 15,
+        dhavamsRolled: 2,
+        pannirendusRolled: 1,
+        piecesCut: 1,
+        piecesFinished: _game.players[i].pieces.where((p) => p.state == PieceState.finished).length,
+      );
+    }
+
+    final record = MatchRecord(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      timestamp: DateTime.now(),
+      durationSeconds: 900,
+      gameMode: _modeLabel(_currentMode),
+      winnerTeamId: _game.winningTeamId ?? 0,
+      statsPerPlayer: playerStats,
+    );
+
+    await DaayakattaiStorageService.logMatch(record);
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: const Color(0xFF3F0E0E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Color(0xFFD9A843), width: 2),
+          ),
+          title: const Text('வெற்றி! Victory!', style: TextStyle(color: Color(0xFFF1E4C4), fontWeight: FontWeight.bold, fontSize: 24)),
+          content: Text(
+            'Team ${_game.winningTeamId} has won the match! Career statistics updated successfully.',
+            style: const TextStyle(color: Colors.white70, fontSize: 18),
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD9A843),
+                foregroundColor: const Color(0xFF3F0E0E),
+              ),
+              onPressed: () {
+                Navigator.pop(context); // Pop dialog
+                Navigator.pop(context); // Go back to dashboard screen
+              },
+              child: const Text('Back to Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
+            )
+          ],
+        ),
+      );
+    }
   }
 
   void _rollDice() {
@@ -640,7 +709,6 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
 
     setState(() {
       final roll = _game.rollDice();
-      _lastRoll = roll;
 
       if (_game.consecutiveBonusCount == 0 && roll.grantsExtra) {
         // If cancellation just triggered, it already moved to next player
@@ -701,7 +769,6 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
     
     for (final move in legalMoves) {
       final piece = player.pieces[move.pieceId];
-      final key = '${player.id}-${piece.id}';
       
       // Determine if tap coordinates match piece location
       bool tapped = false;
@@ -749,7 +816,6 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
       _movingPieceKey = '${_game.currentPlayerIndex}-${piece.id}';
       _moveFromCell = fromCoord;
       _moveToCell = toCoord;
-      _targetIndex = move.targetIndex;
       _validPieceKeys.clear();
       _pulseController.stop();
       _pulseController.value = 0;

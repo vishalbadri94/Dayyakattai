@@ -96,8 +96,8 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
 
       // Speech-optimised audio with low-latency game streaming scenario.
       await engine.setAudioProfile(
-        AudioProfileType.audioProfileSpeechStandard,
-        AudioScenarioType.audioScenarioGameStreaming,
+        profile: AudioProfileType.audioProfileSpeechStandard,
+        scenario: AudioScenarioType.audioScenarioGameStreaming,
       );
 
       // Audio-aware mode gives audio priority over video in congested networks.
@@ -119,11 +119,11 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
       );
 
       // Allow remote users to subscribe to a lower-quality small stream.
-      await engine.enableDualStreamMode(true);
+      await engine.enableDualStreamMode(enabled: true);
       await engine.setRemoteDefaultVideoStreamType(VideoStreamType.videoStreamLow);
 
       // Receive active-speaker volume indications every 200ms.
-      await engine.enableAudioVolumeIndication(200, 3, true);
+      await engine.enableAudioVolumeIndication(interval: 200, smooth: 3, reportVad: true);
       await engine.setEnableSpeakerphone(true);
 
       _registerEventHandlers(engine);
@@ -160,8 +160,8 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
 
         // Subscribe to the low-bitrate stream for this remote user.
         engine.setRemoteVideoStreamType(
-          remoteUid,
-          VideoStreamType.videoStreamLow,
+          uid: remoteUid,
+          streamType: VideoStreamType.videoStreamLow,
         );
       },
       onUserOffline: (connection, remoteUid, reason) {
@@ -174,15 +174,16 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
           });
         }
       },
-      onAudioVolumeIndication: (connection, speakers, totalVolume) {
+      onAudioVolumeIndication: (connection, speakers, speakerNumber, totalVolume) {
         if (!mounted) return;
 
         final active = <int>{};
         for (final info in speakers) {
-          // Agora reports the local user as uid 0 in this callback.
-          final uid = info.uid == 0 ? widget.localUid : info.uid;
-          if (info.volume > 30) {
-            active.add(uid);
+          final uid = info.uid ?? 0;
+          final volume = info.volume ?? 0;
+          final adjustedUid = uid == 0 ? widget.localUid : uid;
+          if (volume > 30) {
+            active.add(adjustedUid);
           }
         }
 
@@ -196,7 +197,7 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
       },
     );
 
-    engine.addEventHandler(handler);
+    engine.registerEventHandler(handler);
   }
 
   bool _sameSet(Set<int> a, Set<int> b) {
@@ -378,10 +379,17 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
       return _buildPlaceholder(icon: Icons.person_outline);
     }
 
-    return AgoraRtcVideoView(
-      // uid 0 always refers to the local camera in Agora video views.
-      controller: AgoraRtcVideoViewController(engine, isLocal ? 0 : uid),
-      fit: VideoViewFit.cover,
+    return AgoraVideoView(
+      controller: isLocal
+          ? VideoViewController(
+              rtcEngine: engine,
+              canvas: const VideoCanvas(uid: 0),
+            )
+          : VideoViewController.remote(
+              rtcEngine: engine,
+              canvas: VideoCanvas(uid: uid),
+              connection: RtcConnection(channelId: widget.channelName),
+            ),
     );
   }
 
