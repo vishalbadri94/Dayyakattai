@@ -2,6 +2,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 
+enum Language { tamil, english }
+
 class DaayakattaiAudioService {
   // Singleton instance
   static final DaayakattaiAudioService _instance = DaayakattaiAudioService._internal();
@@ -11,6 +13,9 @@ class DaayakattaiAudioService {
   final FlutterTts _flutterTts = FlutterTts();
   bool _isInitialized = false;
   bool _isSpeaking = false;
+
+  // Current language setting
+  static Language language = Language.tamil;
 
   // Tamil number translations for dice rolls (1-12)
   static const Map<int, String> _tamilNumbers = {
@@ -28,13 +33,13 @@ class DaayakattaiAudioService {
     12: 'பன்னிரண்டு',
   };
 
-  /// Initialize the TTS engine with Tamil settings
+  /// Initialize the TTS engine with current language settings
   Future<void> init() async {
     if (_isInitialized) return;
 
     try {
-      // Set language to Tamil (India)
-      await _flutterTts.setLanguage('ta-IN');
+      // Set language based on current selection
+      await _flutterTts.setLanguage(language == Language.tamil ? 'ta-IN' : 'en-US');
       // Set pitch for clear, natural voice
       await _flutterTts.setPitch(1.0);
       // Slow speech rate for elderly-friendly clarity
@@ -58,6 +63,13 @@ class DaayakattaiAudioService {
       debugPrint('Failed to initialize TTS: $e');
       _isInitialized = false;
     }
+  }
+
+  /// Set the language for TTS
+  static Future<void> setLanguage(Language lang) async {
+    language = lang;
+    await _instance._flutterTts.setLanguage(lang == Language.tamil ? 'ta-IN' : 'en-US');
+    debugPrint('Language set to: ${lang == Language.tamil ? 'Tamil' : 'English'}');
   }
 
   /// Internal method to speak text with error handling
@@ -85,47 +97,74 @@ class DaayakattaiAudioService {
     }
   }
 
-  /// Announce dice roll value in Tamil
+  /// Announce dice roll value
   Future<void> speakRoll(int value) async {
     if (value < 1 || value > 12) {
       debugPrint('Invalid dice roll value: $value');
       return;
     }
 
-    String tamilNumber = _tamilNumbers[value] ?? 'தெரியவில்லை';
-    String message = 'தாயம் $tamilNumber';
+    String message;
+    if (language == Language.tamil) {
+      String tamilNumber = _tamilNumbers[value] ?? 'தெரியவில்லை';
+      message = 'தாயம் $tamilNumber';
+    } else {
+      message = 'You rolled $value';
+    }
     await _speak(message);
   }
 
-  /// Announce player's turn in Tamil
+  /// Announce player's turn
   Future<void> speakTurn(String playerName) async {
     if (playerName.isEmpty) {
       debugPrint('Empty player name provided');
       return;
     }
 
-    String message = '$playerName, உங்கள் முறை';
+    String message;
+    if (language == Language.tamil) {
+      message = '$playerName, உங்கள் முறை';
+    } else {
+      message = '$playerName, your turn';
+    }
     await _speak(message);
   }
 
-  /// Announce pawn capture in Tamil
+  /// Announce pawn capture
   Future<void> speakCut() async {
-    await _speak('வெட்டு! காய் வெட்டப்பட்டது!');
+    String message;
+    if (language == Language.tamil) {
+      message = 'வெட்டு! காய் வெட்டப்பட்டது!';
+    } else {
+      message = 'Cut! Pawn captured!';
+    }
+    await _speak(message);
   }
 
-  /// Announce 3-strike forfeit in Tamil
+  /// Announce 3-strike forfeit
   Future<void> speakForfeit() async {
-    await _speak('மூன்று முறை தாயம்! வாய்ப்பு இழந்தது.');
+    String message;
+    if (language == Language.tamil) {
+      message = 'மூன்று முறை தாயம்! வாய்ப்பு இழந்தது.';
+    } else {
+      message = 'Three bonus rolls! Turn forfeited.';
+    }
+    await _speak(message);
   }
 
-  /// Announce victory celebration in Tamil
+  /// Announce victory celebration
   Future<void> speakVictory(int teamId) async {
     if (teamId <= 0) {
       debugPrint('Invalid team ID: $teamId');
       return;
     }
 
-    String message = 'வெற்றி! குழு $teamId வெற்றி பெற்றது!';
+    String message;
+    if (language == Language.tamil) {
+      message = 'வெற்றி! குழு $teamId வெற்றி பெற்றது!';
+    } else {
+      message = 'Victory! Team $teamId wins!';
+    }
     await _speak(message);
   }
 

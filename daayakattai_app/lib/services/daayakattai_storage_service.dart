@@ -162,6 +162,27 @@ class DaayakattaiStorageService {
   static const _keyProfiles = 'daayakattai_profiles';
   static const _keyGroups = 'daayakattai_groups';
   static const _keyMatches = 'daayakattai_matches';
+  static const String _keyLanguage = 'daayakattai_language';
+
+  // --- Language Preference ---
+
+  static Future<String> getLanguage() async {
+    try {
+      final data = await _storage.read(key: _keyLanguage);
+      if (data == null) return 'tamil';
+      return data;
+    } catch (e) {
+      return 'tamil';
+    }
+  }
+
+  static Future<void> saveLanguage(String lang) async {
+    try {
+      await _storage.write(key: _keyLanguage, value: lang);
+    } catch (e) {
+      // Silently ignore write errors to match existing pattern
+    }
+  }
 
   // --- Profiles CRUD ---
 

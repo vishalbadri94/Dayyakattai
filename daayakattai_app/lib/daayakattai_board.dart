@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'daayakattai_engine.dart';
 import 'services/daayakattai_storage_service.dart';
+import 'services/daayakattai_audio_service.dart';
 
 const int _gridSize = 7;
 
@@ -554,6 +555,8 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
   BoardCoordinate? _moveFromCell;
   BoardCoordinate? _moveToCell;
   Move? _pendingMove;
+  Language _selectedLanguage = Language.tamil;
+  final DaayakattaiAudioService _audio = DaayakattaiAudioService();
 
   @override
   void initState() {
@@ -577,6 +580,14 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
     );
 
     _moveController.addStatusListener(_handleMoveStatus);
+
+    // Init audio service and restore saved language preference
+    _audio.init();
+    DaayakattaiStorageService.getLanguage().then((lang) {
+      final language = lang == 'english' ? Language.english : Language.tamil;
+      DaayakattaiAudioService.setLanguage(language);
+      if (mounted) setState(() => _selectedLanguage = language);
+    });
   }
 
   void _resetGame(GameMode mode) {
@@ -634,6 +645,34 @@ Widget build(BuildContext context) {
               icon: const Icon(Icons.bug_report, color: Color(0xFFD9A843)),
               onPressed: _showScenarioTester,
             ),
+            // Language toggle: TML ↔ ENG
+            GestureDetector(
+              onTap: () async {
+                final next = _selectedLanguage == Language.tamil
+                    ? Language.english
+                    : Language.tamil;
+                await DaayakattaiAudioService.setLanguage(next);
+                await DaayakattaiStorageService.saveLanguage(
+                    next == Language.tamil ? 'tamil' : 'english');
+                if (mounted) setState(() => _selectedLanguage = next);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFD9A843)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  _selectedLanguage == Language.tamil ? 'TML' : 'ENG',
+                  style: const TextStyle(
+                    color: Color(0xFFD9A843),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
             IconButton(
               icon: const Icon(Icons.refresh, color: Color(0xFFD9A843)),
               onPressed: () => _resetGame(_currentMode),
@@ -713,7 +752,7 @@ Widget build(BuildContext context) {
     if (_pendingMove == null) return;
 
     setState(() {
-      _game.applyMove(_pendingMove!);
+      final result = _game.applyMove(_pendingMove!);
       _movingPieceKey = null;
       _moveFromCell = null;
       _moveToCell = null;
@@ -721,8 +760,16 @@ Widget build(BuildContext context) {
       _validPieceKeys.clear();
       _pulseController.stop();
       _pulseController.value = 0;
-      
-      // Auto-skip or clear if rolls are finished
+
+      // Audio feedback after move
+      if (result.cutPieces.isNotEmpty) {
+        _audio.speakCut();
+      } else if (_game.isGameOver) {
+        _audio.speakVictory(_game.winningTeamId ?? 0);
+      } else {
+        _audio.speakTurn('Player ${_game.currentPlayer.id + 1}');
+      }
+
       _updateHighlights();
 
       if (_game.isGameOver) {
@@ -799,13 +846,17 @@ Widget build(BuildContext context) {
     setState(() {
       final roll = _game.rollDice();
 
+      // Speak the rolled value
+      _audio.speakRoll(roll.value);
+
       if (_game.consecutiveBonusCount == 0 && roll.grantsExtra) {
-        // If cancellation just triggered, it already moved to next player
+        // Three consecutive bonus rolls = forfeit
+        _audio.speakForfeit();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Three consecutive bonus rolls! Turn forfeited.')),
         );
       }
-      
+
       _updateHighlights();
     });
   }
