@@ -56,7 +56,7 @@ class _StatsScreenState extends State<StatsScreen> {
               decoration: BoxDecoration(
                 color: const Color(0x33000000),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFD9A843).withOpacity(0.3)),
+                border: Border.all(color: const Color(0xFFD9A843).withValues(alpha: 0.3)),
               ),
               child: leaderboard.isEmpty
                   ? const Center(child: Text('No stats available.', style: TextStyle(color: Colors.white30)))

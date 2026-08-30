@@ -343,14 +343,14 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
             color: const Color(0xCC102030),
             border: Border.all(
               color: isSpeaking
-                  ? Colors.amber.withOpacity(0.6 + 0.4 * t)
-                  : Colors.white.withOpacity(0.35),
+                  ? Colors.amber.withValues(alpha: 0.6 + 0.4 * t)
+                  : Colors.white.withValues(alpha: 0.35),
               width: isSpeaking ? 3 : 1.5,
             ),
             boxShadow: isSpeaking
                 ? [
                     BoxShadow(
-                      color: Colors.amber.withOpacity(0.35 + 0.65 * t),
+                      color: Colors.amber.withValues(alpha: 0.35 + 0.65 * t),
                       blurRadius: 6 + 14 * t,
                       spreadRadius: 1 + 3 * t,
                     ),

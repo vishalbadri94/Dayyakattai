@@ -449,6 +449,67 @@ class DaayakattaiGame {
     piece._innerIndex = innerIndex;
   }
   
+  // Debug helper method for setting up game states in prebuilt testing scenarios
+  void debugSetupGameState({
+    int? currentPlayerIndex,
+    int? consecutiveBonusCount,
+    bool? rollingPhase,
+    List<int>? customRolls,
+  }) {
+    if (currentPlayerIndex != null) {
+      _currentPlayerIndex = currentPlayerIndex;
+    }
+    if (consecutiveBonusCount != null) {
+      _consecutiveBonusCount = consecutiveBonusCount;
+    }
+    if (rollingPhase != null) {
+      _rollingPhase = rollingPhase;
+    }
+    if (customRolls != null) {
+      _pendingRolls.clear();
+      for (final val in customRolls) {
+        // Map a target value to a valid die1/die2 combination
+        // die1=0 (blank), die2=0..3 represent the four sides; value drives which combo
+        switch (val) {
+          case 1: _pendingRolls.add(DiceRoll(0, 1)); break;
+          case 2: _pendingRolls.add(DiceRoll(1, 1)); break;
+          case 3: _pendingRolls.add(DiceRoll(1, 2)); break;
+          case 4: _pendingRolls.add(DiceRoll(2, 2)); break;
+          case 5: _pendingRolls.add(DiceRoll(2, 3)); break;
+          case 6: _pendingRolls.add(DiceRoll(3, 3)); break;
+          case 12: _pendingRolls.add(DiceRoll(0, 0)); break;
+          default: _pendingRolls.add(DiceRoll(1, 1)); // default = 2
+        }
+      }
+    }
+  }
+
+  /// Appends a single debug roll to the pending roll queue
+  void debugAddPendingRoll(int value) {
+    switch (value) {
+      case 1: _pendingRolls.add(DiceRoll(0, 1)); break;
+      case 2: _pendingRolls.add(DiceRoll(1, 1)); break;
+      case 3: _pendingRolls.add(DiceRoll(1, 2)); break;
+      case 4: _pendingRolls.add(DiceRoll(2, 2)); break;
+      case 5: _pendingRolls.add(DiceRoll(2, 3)); break;
+      case 6: _pendingRolls.add(DiceRoll(3, 3)); break;
+      case 12: _pendingRolls.add(DiceRoll(0, 0)); break;
+      default: _pendingRolls.add(DiceRoll(1, 1));
+    }
+    // Disable rolling phase so the queued rolls are consumed on move
+    _rollingPhase = false;
+  }
+
+  /// Directly sets the consecutive bonus count (for scenario testing)
+  void debugSetConsecutiveBonusCount(int count) {
+    _consecutiveBonusCount = count;
+  }
+
+  /// Directly sets rolling phase flag (for scenario testing)
+  void debugSetNeedsRoll(bool value) {
+    _rollingPhase = value;
+  }
+  
   // Public check for landing rules, exposed for UI highlights and test suites
   bool canLandOn(BoardCoordinate coord, Player mover) {
     return _canLandOn(coord, mover);

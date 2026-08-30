@@ -201,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: CircleAvatar(
-                      backgroundColor: col.withOpacity(0.15),
+                      backgroundColor: col.withValues(alpha: 0.15),
                       radius: 28,
                       child: Text(p.avatarKey, style: const TextStyle(fontSize: 28)),
                     ),

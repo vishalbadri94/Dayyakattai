@@ -221,7 +221,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0x1F000000),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: seatColor.withOpacity(0.4), width: 1.5),
+                          border: Border.all(color: seatColor.withValues(alpha: 0.4), width: 1.5),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

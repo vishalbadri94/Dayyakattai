@@ -409,14 +409,14 @@ class DaayakattaiBoardPainter extends CustomPainter {
       final double p = pulse.clamp(0.0, 1.0);
 
       final Paint glowPaint = Paint()
-        ..color = const Color(0xFF00E676).withOpacity(0.35 + 0.45 * p)
+        ..color = const Color(0xFF00E676).withValues(alpha: 0.35 + 0.45 * p)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, 6 + 4 * p);
       canvas.drawCircle(center, r * 1.5, glowPaint);
 
       final Paint outlinePaint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3.0
-        ..color = const Color(0xFF00E676).withOpacity(0.65 + 0.35 * p);
+        ..color = const Color(0xFF00E676).withValues(alpha: 0.65 + 0.35 * p);
       canvas.drawCircle(center, r * 1.1, outlinePaint);
     }
 
@@ -494,7 +494,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2
-        ..color = Colors.white.withOpacity(0.55),
+        ..color = Colors.white.withValues(alpha: 0.55),
     );
     canvas.restore();
 
@@ -611,6 +611,94 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
         return '12 Players (4v3)';
     }
   }
+
+@override
+Widget build(BuildContext context) {
+  return Column(
+    children: [
+      Container(
+        color: const Color(0xFF2B0A0A),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            const Text(
+              '🎲 Daayakattai',
+              style: TextStyle(
+                color: Color(0xFFD9A843),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.bug_report, color: Color(0xFFD9A843)),
+              onPressed: _showScenarioTester,
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Color(0xFFD9A843)),
+              onPressed: () => _resetGame(_currentMode),
+            ),
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Row(
+          children: [
+            Text(
+              'Player ${_game.currentPlayer.id + 1} 🎯 Rolls: ${_game.pendingRolls.isEmpty ? "-" : _game.pendingRolls.map((r) => r.value).join(", ")}',
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+      Expanded(
+        child: GestureDetector(
+          onTapUp: _handleTapUp,
+          child: AnimatedBuilder(
+            animation: Listenable.merge([_pulseController, _moveAnimation]),
+            builder: (context, _) => RepaintBoundary(
+              key: _boardKey,
+              child: CustomPaint(
+                painter: DaayakattaiBoardPainter(
+                  game: _game,
+                  validPieceKeys: _validPieceKeys,
+                  pulse: _pulseController.value,
+                  movingPieceKey: _movingPieceKey,
+                  moveFromCell: _moveFromCell,
+                  moveToCell: _moveToCell,
+                  moveProgress: _moveAnimation.value,
+                ),
+                size: Size.infinite,
+              ),
+            ),
+          ),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _game.needsRoll ? _rollDice : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD9A843),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'தாயம் எறி / Roll Dice',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
 
   @override
   void dispose() {
@@ -825,215 +913,182 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
     _moveController.forward(from: 0);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final player = _game.currentPlayer;
-    final team = DaayakattaiTeam.values[player.teamId];
+  // ==================== SCENARIO TESTER METHODS ====================
 
+  void _showScenarioTester() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF3F0E0E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFFD9A843), width: 2),
+        ),
+        title: const Text(
+          'Scenario Tester',
+          style: TextStyle(color: Color(0xFFF1E4C4), fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildScenarioButton(
+              icon: Icons.warning_amber,
+              label: 'Forfeit Forfeiture (3-Strike)',
+              onTap: _scenarioForfeitForfeiture,
+            ),
+            _buildScenarioButton(
+              icon: Icons.block,
+              label: 'Jodu Block (Pairs Blocking)',
+              onTap: _scenarioJoduBlock,
+            ),
+            _buildScenarioButton(
+              icon: Icons.lock,
+              label: 'Vettu Lock (Entry Blocked)',
+              onTap: _scenarioVettuLock,
+            ),
+            _buildScenarioButton(
+              icon: Icons.lock_open,
+              label: 'Vettu Unlock (Inner Access)',
+              onTap: _scenarioVettuUnlock,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close', style: TextStyle(color: Color(0xFFD9A843))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScenarioButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: InkWell(
+        onTap: () {
+          Navigator.pop(context);
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF581616),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFD9A843), width: 1),
+          ),
+          child: Row(
             children: [
-              DropdownButton<GameMode>(
-                value: _currentMode,
-                dropdownColor: const Color(0xFF3F0E0E),
-                underline: const SizedBox(),
-                style: const TextStyle(
-                  color: Color(0xFFF1E4C4),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Icon(icon, color: const Color(0xFFD9A843)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Color(0xFFF1E4C4),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                onChanged: (val) {
-                  if (val != null) _resetGame(val);
-                },
-                items: GameMode.values.map((mode) {
-                  return DropdownMenuItem<GameMode>(
-                    value: mode,
-                    child: Text(_modeLabel(mode)),
-                  );
-                }).toList(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh, color: Color(0xFFF1E4C4)),
-                onPressed: () => _resetGame(_currentMode),
-                tooltip: 'Reset Game',
               ),
             ],
-          ),
-          const SizedBox(height: 4),
-          _buildStatusBar(player, team),
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: GestureDetector(
-                  onTapUp: _handleTapUp,
-                  child: CustomPaint(
-                    key: _boardKey,
-                    painter: DaayakattaiBoardPainter(
-                      game: _game,
-                      validPieceKeys: _validPieceKeys,
-                      pulse: _pulseController.value,
-                      movingPieceKey: _movingPieceKey,
-                      moveFromCell: _moveFromCell,
-                      moveToCell: _moveToCell,
-                      moveProgress: _moveAnimation.value,
-                    ),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          _RollButton(
-            enabled: _game.needsRoll && !_moveController.isAnimating,
-            diceValue: _game.currentRoll?.value,
-            onRoll: _rollDice,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBar(Player player, DaayakattaiTeam team) {
-    String message;
-    final String playerLabel = 'Player ${player.id + 1} (${team.label})';
-    if (_game.needsRoll) {
-      message = '$playerLabel — Roll Kattai!';
-    } else if (_game.hasPendingRolls) {
-      final rolls = _game.pendingRolls.map((r) => r.value).join(', ');
-      message = 'Rolls: [$rolls] — $playerLabel move';
-    } else {
-      message = 'Game Over!';
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: team.color,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black38, width: 1.5),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            message,
-            style: const TextStyle(
-              color: Color(0xFFF1E4C4),
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RollButton extends StatelessWidget {
-  const _RollButton({
-    required this.enabled,
-    required this.onRoll,
-    this.diceValue,
-  });
-
-  final bool enabled;
-  final VoidCallback onRoll;
-  final int? diceValue;
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Color> brassColors = enabled
-        ? const [Color(0xFFF8E08E), Color(0xFFD9A843), Color(0xFF9B7024)]
-        : const [Color(0xFF9E9689), Color(0xFF7A7468), Color(0xFF5C574E)];
-    final Color textColor = enabled ? const Color(0xFF3D2508) : const Color(0xFFE9E5DC);
-
-    final String englishLabel = enabled ? 'ROLL DICE' : 'ROLLING PHASE ENDED';
-    final String tamilLabel = enabled ? 'காய் உருட்டு' : 'வழிகள் விளையாடுங்கள்';
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 12),
-      child: SizedBox(
-        height: 64,
-        width: double.infinity,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: brassColors,
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: enabled ? const Color(0xFF6E4A14) : const Color(0xFF4A4640),
-              width: 2,
-            ),
-            boxShadow: enabled
-                ? [
-                    BoxShadow(
-                      color: Colors.black38,
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: enabled ? onRoll : null,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.casino_outlined, color: textColor, size: 30),
-                  const SizedBox(width: 10),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        englishLabel,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.1,
-                          height: 1.1,
-                        ),
-                      ),
-                      Text(
-                        tamilLabel,
-                        style: TextStyle(
-                          color: textColor.withOpacity(0.9),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          height: 1.1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ),
         ),
       ),
     );
+  }
+
+  void _scenarioForfeitForfeiture() {
+    setState(() {
+      _currentMode = GameMode.twoPlayer;
+      _game = DaayakattaiGame(mode: _currentMode);
+      
+      // Add two bonus rolls to pending rolls
+      _game.debugAddPendingRoll(12);
+      _game.debugAddPendingRoll(1);
+      
+      // Set consecutive bonus count to 2
+      _game.debugSetConsecutiveBonusCount(2);
+      
+      // Override rolling phase to true so player must roll once more
+      _game.debugSetNeedsRoll(true);
+      
+      _validPieceKeys.clear();
+      _pulseController.stop();
+      _pulseController.value = 0;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Scenario: Roll once more to trigger 3-strike forfeit!')),
+      );
+    }
+  }
+
+  void _scenarioJoduBlock() {
+    Navigator.pop(context);
+    setState(() {
+      _currentMode = GameMode.fourPlayerTeams;
+      _game = DaayakattaiGame(mode: _currentMode);
+      // Place Player 0 pieces 0 and 1 at outer index 5 (Jodu pair)
+      _game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: 5);
+      _game.debugSetupPiece(0, 1, PieceState.outer, outerSteps: 5);
+      // Place Player 1 piece 0 at outer index 3 (behind the pair)
+      _game.debugSetupPiece(1, 0, PieceState.outer, outerSteps: 3);
+      // Set Player 1's turn with a queued roll of 2
+      _game.debugAddPendingRoll(2);
+      _game.debugSetupGameState(currentPlayerIndex: 1, rollingPhase: false);
+      _updateHighlights();
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Scenario: Player 2 tries to land on Player 1\'s pair (blocked!)')),
+      );
+    }
+  }
+
+  void _scenarioVettuLock() {
+    Navigator.pop(context);
+    setState(() {
+      _currentMode = GameMode.twoPlayer;
+      _game = DaayakattaiGame(mode: _currentMode);
+      // Place Player 0 piece 0 at the inner track gate (outerLength = 24)
+      _game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: Board.outerLength);
+      // hasVettu defaults to false on new game
+      _game.debugAddPendingRoll(3);
+      _game.debugSetupGameState(currentPlayerIndex: 0, rollingPhase: false);
+      _updateHighlights();
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Scenario: Enter inner track without a capture (blocked!)')),
+      );
+    }
+  }
+
+  void _scenarioVettuUnlock() {
+    Navigator.pop(context);
+    setState(() {
+      _currentMode = GameMode.twoPlayer;
+      _game = DaayakattaiGame(mode: _currentMode);
+      // Place Player 0 piece 0 at the inner track gate
+      _game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: Board.outerLength);
+      // Grant hasVettu so entry to inner track is allowed
+      _game.players[0].hasVettu = true;
+      _game.debugAddPendingRoll(3);
+      _game.debugSetupGameState(currentPlayerIndex: 0, rollingPhase: false);
+      _updateHighlights();
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Scenario: Enter inner track after a capture (Allowed!)')),
+      );
+    }
   }
 }

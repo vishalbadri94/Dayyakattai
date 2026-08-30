@@ -29,6 +29,9 @@ dependencies:
   # URL Launching (WhatsApp Intents)
   url_launcher: ^6.3.0
 
+  # Localized Text to Speech (Tamil Voice Assist)
+  flutter_tts: ^3.8.5
+
   cupertino_icons: ^1.0.6
 
 dev_dependencies:
