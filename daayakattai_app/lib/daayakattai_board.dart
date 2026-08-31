@@ -175,49 +175,204 @@ class DaayakattaiBoardPainter extends CustomPainter {
   void _drawRawSilkBackground(Canvas canvas, Size size) {
     final Rect rect = Offset.zero & size;
     
-    // Polished teak wood background
-    final Paint woodPaint = Paint()
+    // Base wood color
+    final Paint woodBase = Paint()..color = const Color(0xFF8B5A2B);
+    canvas.drawRect(rect, woodBase);
+
+    // Wood grain lines - horizontal and diagonal subtle lines
+    final Paint grainPaint = Paint()
+      ..color = const Color(0xFF704214).withValues(alpha: 0.3)
+      ..strokeWidth = 1.0;
+    
+    final math.Random random = math.Random(42);
+    for (int i = 0; i < 60; i++) {
+      final double y = random.nextDouble() * size.height;
+      final double xStart = random.nextDouble() * size.width;
+      final double xEnd = xStart + random.nextDouble() * 100 - 50;
+      final double yEnd = y + random.nextDouble() * 20 - 10;
+      canvas.drawLine(Offset(xStart, y), Offset(xEnd, yEnd), grainPaint);
+    }
+
+    // Additional darker grain lines
+    final Paint darkGrain = Paint()
+      ..color = const Color(0xFF5C3317).withValues(alpha: 0.2)
+      ..strokeWidth = 0.8;
+    for (int i = 0; i < 40; i++) {
+      final double y = random.nextDouble() * size.height;
+      final double xStart = random.nextDouble() * size.width;
+      final double xEnd = xStart + random.nextDouble() * 80 - 40;
+      final double yEnd = y + random.nextDouble() * 15 - 7.5;
+      canvas.drawLine(Offset(xStart, y), Offset(xEnd, yEnd), darkGrain);
+    }
+
+    // Raised wooden frame
+    final Paint framePaint = Paint()
       ..shader = const LinearGradient(
         colors: [
-          Color(0xFF8B5A2B), // Teak brown
-          Color(0xFF704214), // Walnut brown
-          Color(0xFF5C3317), // Dark chocolate wood
+          Color(0xFF5C3317),
+          Color(0xFF3E1F0D),
+          Color(0xFF2A1508),
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(rect);
-    canvas.drawRect(rect, woodPaint);
+    canvas.drawRect(rect, framePaint);
 
-    // Inner gold inlay border
-    final Paint goldInlay = Paint()
+    // Inner frame border
+    final Paint innerFrame = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
+      ..strokeWidth = 4.0
       ..color = const Color(0xFFD9A843);
-    canvas.drawRect(rect.deflate(12), goldInlay);
+    canvas.drawRect(rect.deflate(8), innerFrame);
 
-    // Draw Gold Corner Labels: "தாயம்" (top-left) and "விளையாட்டு" (top-right)
-    const textStyle = TextStyle(
+    // Antique brass corner brackets
+    _drawBrassCornerBracket(canvas, rect.topLeft, Alignment.topLeft);
+    _drawBrassCornerBracket(canvas, rect.topRight, Alignment.topRight);
+    _drawBrassCornerBracket(canvas, rect.bottomLeft, Alignment.bottomLeft);
+    _drawBrassCornerBracket(canvas, rect.bottomRight, Alignment.bottomRight);
+
+    // Gold leaf/floral motifs in bottom corners
+    _drawGoldMotif(canvas, rect.bottomLeft + Offset(30, -30), 20);
+    _drawGoldMotif(canvas, rect.bottomRight + Offset(-30, -30), 20);
+
+    // Engraved Tamil labels
+    _drawEngravedText(canvas, 'தாயம்', rect.topLeft + Offset(30, 30));
+    _drawEngravedText(canvas, 'விளையாட்டு', rect.topRight + Offset(-30, 30), alignRight: true);
+  }
+
+  void _drawBrassCornerBracket(Canvas canvas, Offset corner, Alignment alignment) {
+    final Paint brassPaint = Paint()
+      ..color = const Color(0xFFD9A843)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+    
+    final double size = 30;
+    final Path bracketPath = Path();
+    
+    if (alignment == Alignment.topLeft) {
+      bracketPath.moveTo(corner.dx + size, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy + size);
+      bracketPath.moveTo(corner.dx + size * 0.7, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy + size * 0.7);
+    } else if (alignment == Alignment.topRight) {
+      bracketPath.moveTo(corner.dx - size, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy + size);
+      bracketPath.moveTo(corner.dx - size * 0.7, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy + size * 0.7);
+    } else if (alignment == Alignment.bottomLeft) {
+      bracketPath.moveTo(corner.dx + size, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy - size);
+      bracketPath.moveTo(corner.dx + size * 0.7, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy - size * 0.7);
+    } else {
+      bracketPath.moveTo(corner.dx - size, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy - size);
+      bracketPath.moveTo(corner.dx - size * 0.7, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy);
+      bracketPath.lineTo(corner.dx, corner.dy - size * 0.7);
+    }
+    
+    canvas.drawPath(bracketPath, brassPaint);
+  }
+
+  void _drawGoldMotif(Canvas canvas, Offset center, double size) {
+    final Paint goldPaint = Paint()
+      ..color = const Color(0xFFD9A843)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    
+    // Simple leaf pattern
+    for (int i = 0; i < 4; i++) {
+      final double angle = i * math.pi / 2;
+      final Offset leafEnd = center + Offset(math.cos(angle) * size, math.sin(angle) * size);
+      final Offset leafControl = center + Offset(math.cos(angle + 0.3) * size * 0.5, math.sin(angle + 0.3) * size * 0.5);
+      
+      final Path leafPath = Path()
+        ..moveTo(center.dx, center.dy)
+        ..quadraticBezierTo(leafControl.dx, leafControl.dy, leafEnd.dx, leafEnd.dy);
+      
+      canvas.drawPath(leafPath, goldPaint);
+    }
+    
+    // Center dot
+    canvas.drawCircle(center, 2, goldPaint);
+  }
+
+  void _drawEngravedText(Canvas canvas, String text, Offset position, {bool alignRight = false}) {
+    // Shadow/engraving effect
+    const shadowStyle = TextStyle(
+      color: Color(0xFF2A1508),
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+    );
+    
+    const lightStyle = TextStyle(
       color: Color(0xFFD9A843),
       fontSize: 20,
       fontWeight: FontWeight.bold,
-      fontFamily: 'Roboto', // uses fallback if not loaded
     );
-
-    final TextPainter tpLeft = TextPainter(
-      text: const TextSpan(text: 'தாயம்', style: textStyle),
+    
+    final TextPainter shadowPainter = TextPainter(
+      text: TextSpan(text: text, style: shadowStyle),
       textDirection: TextDirection.ltr,
     )..layout();
-    tpLeft.paint(canvas, rect.topLeft + const Offset(20, 20));
-
-    final TextPainter tpRight = TextPainter(
-      text: const TextSpan(text: 'விளையாட்டு', style: textStyle),
+    
+    final TextPainter lightPainter = TextPainter(
+      text: TextSpan(text: text, style: lightStyle),
       textDirection: TextDirection.ltr,
     )..layout();
-    tpRight.paint(canvas, rect.topRight - Offset(tpRight.width + 20, -20));
+    
+    if (alignRight) {
+      shadowPainter.paint(canvas, position - Offset(shadowPainter.width, 0) + const Offset(1, 1));
+      lightPainter.paint(canvas, position - Offset(lightPainter.width, 0));
+    } else {
+      shadowPainter.paint(canvas, position + const Offset(1, 1));
+      lightPainter.paint(canvas, position);
+    }
   }
 
   void _drawBrassOuterFrame(Canvas canvas, Rect boardRect) {
     // Keep a subtle gold framing around the active cross
+    final Paint framePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = const Color(0xFFD9A843);
+    canvas.drawRect(boardRect, framePaint);
+  }
+
+  void _drawWoodenEmblem(Canvas canvas, Offset center, double size) {
+    final Paint emblemPaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [
+          Color(0xFFD9A843),
+          Color(0xFF8B5A2B),
+          Color(0xFF5C3317),
+        ],
+        stops: [0.0, 0.5, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: size));
+    
+    canvas.drawCircle(center, size, emblemPaint);
+    
+    // Add decorative ring
+    final Paint ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = const Color(0xFFD9A843);
+    canvas.drawCircle(center, size * 0.7, ringPaint);
+    
+    // Add small dot in center
+    canvas.drawCircle(center, size * 0.2, Paint()..color = const Color(0xFFD9A843));
+  }
+
+  void _drawWoodenBellMarker(Canvas canvas, Offset center, double r, Color ringColor) {
+    // Left empty or fallback marker drawing
   }
 
   void _drawGridCells(Canvas canvas, Rect boardRect) {
@@ -429,7 +584,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveFromCell!.x, moveFromCell!.y);
               
           final toCenter = moveToCell!.x == -2 // -2 flag represents Finished State
-              ? DaayakattaiBoardGeometry.cellCenter(boardRect, 3, 3)
+              ? DaayakattaiBoardGeometry.cellCenter(boardRect, 9, 9)
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveToCell!.x, moveToCell!.y);
               
           center = Offset.lerp(fromCenter, toCenter, moveProgress.clamp(0.0, 1.0))!;
@@ -442,7 +597,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
           // Draw home/finished pieces without stacking logic
           final radius = math.min(cellW, cellH) * 0.28;
           final bool selected = validPieceKeys.contains(key);
-          _drawBellPawn(canvas, center, radius, _teamColor(player.teamId), selected);
+          _drawMarble(canvas, center, radius, _teamColor(player.teamId), selected);
         }
       }
     }
@@ -460,7 +615,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
 
         final double radius = math.min(cellW, cellH) * 0.26;
         final bool selected = validPieceKeys.contains(key);
-        _drawBellPawn(canvas, stackCenter, radius, _teamColor(piece.owner.teamId), selected);
+        _drawMarble(canvas, stackCenter, radius, _teamColor(piece.owner.teamId), selected);
       }
     });
   }
@@ -475,11 +630,11 @@ class DaayakattaiBoardPainter extends CustomPainter {
     }
   }
 
-  void _drawBellPawn(
+  void _drawMarble(
     Canvas canvas,
     Offset center,
     double r,
-    Color ringColor,
+    Color marbleColor,
     bool selected,
   ) {
     if (selected) {
@@ -508,97 +663,47 @@ class DaayakattaiBoardPainter extends CustomPainter {
       shadowPaint,
     );
 
-    // Lathe-turned bell geometry
-    final Path bell = Path()
-      ..moveTo(center.dx, center.dy - r)
-      ..cubicTo(
-        center.dx - r * 0.58,
-        center.dy - r * 0.55,
-        center.dx - r * 0.60,
-        center.dy + r * 0.10,
-        center.dx - r * 0.42,
-        center.dy + r * 0.58,
-      )
-      ..quadraticBezierTo(
-        center.dx,
-        center.dy + r * 0.85,
-        center.dx + r * 0.42,
-        center.dy + r * 0.58,
-      )
-      ..cubicTo(
-        center.dx + r * 0.60,
-        center.dy + r * 0.10,
-        center.dx + r * 0.58,
-        center.dy - r * 0.55,
-        center.dx,
-        center.dy - r,
-      )
-      ..close();
-
-    final Paint brassPaint = Paint()
-      ..shader = const LinearGradient(
+    // Draw marble with radial gradient
+    final Paint marblePaint = Paint()
+      ..shader = RadialGradient(
         colors: [
-          Color(0xFFFBE39C),
-          Color(0xFFEAC35D),
-          Color(0xFFB9812B),
-          Color(0xFF8A5719),
+          _lightenColor(marbleColor, 0.4),
+          marbleColor,
+          _darkenColor(marbleColor, 0.3),
         ],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromCircle(center: center, radius: r * 1.2));
+        stops: const [0.0, 0.6, 1.0],
+        center: const Alignment(-0.3, -0.3),
+        radius: 1.2,
+      ).createShader(Rect.fromCircle(center: center, radius: r));
 
-    canvas.drawPath(bell, brassPaint);
-    canvas.drawPath(
-      bell,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0
-        ..color = const Color(0xFF6A4416),
+    canvas.drawCircle(center, r, marblePaint);
+
+    // Add glossy highlight
+    final Paint highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.6)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 2);
+    canvas.drawCircle(
+      center + Offset(-r * 0.3, -r * 0.3),
+      r * 0.25,
+      highlightPaint,
     );
 
-    // LACQUER RING INLAY
-    final Rect ringRect = Rect.fromCenter(
-      center: Offset(center.dx, center.dy + r * 0.28),
-      width: r * 0.9,
-      height: r * 0.32,
-    );
+    // Add subtle rim
+    final Paint rimPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..color = Colors.white.withValues(alpha: 0.3);
+    canvas.drawCircle(center, r, rimPaint);
+  }
 
-    canvas.save();
-    canvas.clipPath(bell);
-    canvas.drawOval(ringRect, Paint()..color = ringColor);
-    canvas.drawOval(
-      ringRect,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..color = Colors.white.withValues(alpha: 0.55),
-    );
-    canvas.restore();
+  Color _lightenColor(Color color, double amount) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
+  }
 
-    // Bell top knob
-    final Rect knobRect = Rect.fromCenter(
-      center: Offset(center.dx, center.dy - r * 0.95),
-      width: r * 0.5,
-      height: r * 0.5,
-    );
-    final Paint knobPaint = Paint()
-      ..shader = const RadialGradient(
-        colors: [
-          Color(0xFFFFF7D8),
-          Color(0xFFD2A64E),
-          Color(0xFF9A6722),
-        ],
-        stops: [0.0, 0.6, 1.0],
-      ).createShader(knobRect);
-
-    canvas.drawOval(knobRect, knobPaint);
-    canvas.drawOval(
-      knobRect,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.8
-        ..color = const Color(0xFF6A4416),
-    );
+  Color _darkenColor(Color color, double amount) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
   }
 }
 
