@@ -41,10 +41,10 @@ extension DaayakattaiTeamX on DaayakattaiTeam {
 class DaayakattaiBoardGeometry {
   /// Check if a cell is one of the four unused 2x2 corners (home areas).
   static bool isUnusedCorner(int row, int col) {
-    return ((row == 1 || row == 2) && (col == 1 || col == 2)) ||
-        ((row == 1 || row == 2) && (col == 4 || col == 5)) ||
-        ((row == 4 || row == 5) && (col == 1 || col == 2)) ||
-        ((row == 4 || row == 5) && (col == 4 || col == 5));
+    return (row < 2 && col < 2) || // Top-Left
+        (row < 2 && col > 4) ||    // Top-Right
+        (row > 4 && col < 2) ||    // Bottom-Left
+        (row > 4 && col > 4);      // Bottom-Right
   }
 
   /// Middle row and middle column are safe cross cells.

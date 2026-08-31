@@ -37,7 +37,7 @@ class _DiceAnimationWidgetState extends State<DiceAnimationWidget>
         }
       });
 
-    _flipStates = List.generate(4, (_) => _random.nextBool());
+    _flipStates = List.generate(2, (_) => _random.nextBool());
 
     if (widget.isRolling) {
       _startRolling();
@@ -48,7 +48,7 @@ class _DiceAnimationWidgetState extends State<DiceAnimationWidget>
     _controller.repeat();
     _flipTimer = Timer.periodic(const Duration(milliseconds: 80), (_) {
       setState(() {
-        _flipStates = List.generate(4, (_) => _random.nextBool());
+        _flipStates = List.generate(2, (_) => _random.nextBool());
       });
     });
   }
@@ -81,21 +81,21 @@ class _DiceAnimationWidgetState extends State<DiceAnimationWidget>
   List<bool> _getFinalFaces() {
     switch (widget.rollValue) {
       case 12:
-        return [false, false, false, false];
+        return [false, false];
       case 1:
-        return [true, false, false, false];
+        return [true, false];
       case 2:
-        return [true, true, false, false];
+        return [true, true];
       case 3:
-        return [true, true, true, false];
+        return [true, true];
       case 4:
-        return [true, true, true, true];
+        return [true, true];
       case 5:
-        return [false, false, false, false];
+        return [false, false];
       case 6:
-        return [true, true, true, true];
+        return [true, true];
       default:
-        return [false, false, false, false];
+        return [false, false];
     }
   }
 
@@ -197,45 +197,73 @@ class _DicePainter extends CustomPainter {
     final startX = (size.width - (stickWidth * 2 + gap)) / 2;
     final startY = (size.height - (stickHeight * 2 + gap)) / 2;
 
-    final goldPaint = Paint()
-      ..color = const Color(0xFFD9A843)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+    // Brass gradient colors
+    final brassGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        const Color(0xFFD9A843),
+        const Color(0xFFB8860B),
+        const Color(0xFF8B6914),
+        const Color(0xFFD9A843),
+      ],
+      stops: const [0.0, 0.3, 0.7, 1.0],
+    );
 
-    final darkPaint = Paint()
-      ..color = const Color(0xFF2B0A0A)
-      ..style = PaintingStyle.fill;
-
-    final ivoryPaint = Paint()
-      ..color = const Color(0xFFF1E4C4)
+    final brassPaint = Paint()
+      ..shader = brassGradient.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      )
       ..style = PaintingStyle.fill;
 
     final goldDotPaint = Paint()
       ..color = const Color(0xFFD9A843)
       ..style = PaintingStyle.fill;
 
-    for (int i = 0; i < 4; i++) {
-      final row = i ~/ 2;
-      final col = i % 2;
-      final left = startX + col * (stickWidth + gap);
-      final top = startY + row * (stickHeight + gap);
+    // Draw two elongated rectangular bars side-by-side
+    for (int i = 0; i < 2; i++) {
+      final left = startX + i * (stickWidth + gap);
+      final top = startY;
+
+      // Apply rotation and scale during animation
+      final angle = animationValue * 2 * pi;
+      final scale = 1.0 + 0.1 * sin(animationValue * 2 * pi);
+
+      canvas.save();
+      canvas.translate(left + stickWidth / 2, top + stickHeight / 2);
+      canvas.rotate(angle);
+      canvas.scale(scale);
+      canvas.translate(-(left + stickWidth / 2), -(top + stickHeight / 2));
 
       final rect = RRect.fromRectAndRadius(
         Rect.fromLTWH(left, top, stickWidth, stickHeight),
         Radius.circular(stickWidth * 0.2),
       );
 
-      // Draw the stick body
-      canvas.drawRRect(rect, faces[i] ? ivoryPaint : darkPaint);
+      // Draw the stick body with brass gradient
+      canvas.drawRRect(rect, brassPaint);
 
       // Draw gold border
+      final goldPaint = Paint()
+        ..color = const Color(0xFFD9A843)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2;
       canvas.drawRRect(rect, goldPaint);
 
-      // Special case for 5: draw gold dot in center of all sticks
-      if (isSpecialFive) {
+      // Draw dots on the faces representing the final roll values
+      if (!isSpecialFive) {
+        if (faces[i]) {
+          // Draw dot in center of the stick
+          final center = Offset(left + stickWidth / 2, top + stickHeight / 2);
+          canvas.drawCircle(center, stickWidth * 0.15, goldDotPaint);
+        }
+      } else {
+        // Special case for 5: draw gold dot in center of all sticks
         final center = Offset(left + stickWidth / 2, top + stickHeight / 2);
         canvas.drawCircle(center, stickWidth * 0.15, goldDotPaint);
       }
+
+      canvas.restore();
     }
   }
 
