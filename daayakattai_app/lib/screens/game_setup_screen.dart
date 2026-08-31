@@ -310,30 +310,12 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                                 ),
                               ),
                               body: SafeArea(
-                                child: Stack(
-                                  children: [
-                                    // The main board occupying the entire screen space
-                                    Positioned.fill(
-                                      child: DaayakattaiBoard(
-                                        initialMode: _selectedMode,
-                                        initialProfiles: profiles,
-                                      ),
-                                    ),
-                                    // A small, elegant floating Video Header overlay at the top (semi-transparent)
-                                    Positioned(
-                                      top: 10,
-                                      left: 10,
-                                      right: 10,
-                                      height: 100, // Compact height for floating video frames
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Container(
-                                          color: Colors.black.withValues(alpha: 0.3),
-                                          child: AgoraVideoHeader(channelName: 'family-daayakattai-room'),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                child: AgoraVideoHeader(
+                                  channelName: 'family-daayakattai-room',
+                                  child: DaayakattaiBoard(
+                                    initialMode: _selectedMode,
+                                    initialProfiles: profiles,
+                                  ),
                                 ),
                               ),
                             ),

@@ -19,12 +19,14 @@ class AgoraVideoHeader extends StatefulWidget {
     this.token = '',
     this.localUid = 1000,
     this.avatarRadius = 36,
+    this.child,
   });
 
   final String appId;
   final String channelName;
   final String token;
   final int localUid;
+  final Widget? child;
 
   /// Radius of each circular video bubble.
   final double avatarRadius;
@@ -253,31 +255,33 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
           return Stack(
             clipBehavior: Clip.none,
             children: [
-              // Central board placeholder.
+              // The actual game board (passed as child) or fallback mock board
               Center(
                 child: Container(
                   width: boardSize,
                   height: boardSize,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4E342E),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white24),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black38,
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
+                  child: widget.child ?? Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4E342E),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.white24),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black38,
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'BOARD',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
                       ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'BOARD',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
                     ),
                   ),
                 ),
