@@ -41,7 +41,7 @@
     "description": "Grandparent accessibility mode - large fonts, haptics, high contrast",
     "output_file": "lib/services/daayakattai_accessibility_service.dart",
     "context_files": [],
-    "done": false,
+    "done": true,
     "prompt": "Create a Flutter accessibility service `daayakattai_accessibility_service.dart`.\n\nRequirements:\n1. Class `DaayakattaiAccessibilityService` with:\n   - `static bool grandparentMode = false`\n   - `static Future<void> setGrandparentMode(bool enabled)`: sets mode, persists via shared_preferences, triggers haptic feedback via `HapticFeedback.mediumImpact()`\n   - `static double get baseFontSize`: returns 22.0 if grandparentMode else 16.0\n   - `static double get titleFontSize`: returns 28.0 if grandparentMode else 20.0\n   - `static double get buttonFontSize`: returns 24.0 if grandparentMode else 18.0\n   - `static double get minTapTarget`: returns 64.0 if grandparentMode else 48.0\n   - `static Future<void> load()`: loads saved preference on startup\n   - `static void speakOnTap()`: calls `HapticFeedback.selectionClick()`\n2. Import: package:flutter/services.dart, package:flutter/foundation.dart, dart:async\n3. Note: Use flutter's built-in SharedPreferences-equivalent via a simple static map for now (no extra packages).\n\nOutput the COMPLETE file in a ```dart code block."
   },
   {
@@ -51,7 +51,7 @@
     "description": "3-screen onboarding flow (first launch)",
     "output_file": "lib/screens/onboarding_screen.dart",
     "context_files": [],
-    "done": false,
+    "done": true,
     "prompt": "Create a stunning Flutter onboarding screen file `onboarding_screen.dart`.\n\nDesign: Dark red `Color(0xFF2B0A0A)` background, gold `Color(0xFFD9A843)` accents, ivory `Color(0xFFF1E4C4)` text. Use PageView with 3 pages.\n\nPage 1 - Welcome:\n- Large gold title: 'Daayakattai' (32sp bold)\n- Subtitle: '\u0ba4\u0bae\u0bbf\u0bb4\u0bb0\u0bbf\u0ba9\u0bcd \u0baa\u0bbe\u0bb0\u0bae\u0bcd\u0baa\u0bb0\u0bbf\u0baf \u0bb5\u0bbf\u0bb3\u0bc8\u0baf\u0bbe\u0b9f\u0bcd\u0b9f\u0bc1' (Tamil, 18sp)\n- Subtitle English: 'The Ancient Tamil Board Game' (16sp ivory)\n- A decorative 7x7 grid illustration drawn with CustomPaint (simple colored cells, no images)\n\nPage 2 - How to Play:\n- Title: 'How to Play / \u0bb5\u0bbf\u0bb3\u0bc8\u0baf\u0bbe\u0b9f\u0bc1\u0bb5\u0ba4\u0bc1 \u0b8e\u0baa\u0bcd\u0baa\u0b9f\u0bbf'\n- 4 rule cards with icons:\n  1. Icons.casino - 'Roll dice (1,5,6,12 = bonus roll)'\n  2. Icons.people - 'Pairs (Jodu) block enemies'\n  3. Icons.cut - 'Capture (Vettu) to enter inner track'\n  4. Icons.emoji_events - 'First team to finish all pieces wins'\n- Each card: dark `Color(0xFF3F0E0E)` background, gold border, ivory text\n\nPage 3 - Get Started:\n- Title: 'Start Playing!'\n- Name input field (gold border, ivory text): 'Enter your name'\n- Big gold 'Play Now' button\n- On tap: saves name via Navigator.pop(context, name)\n\nBottom: dot indicators (gold active, grey inactive), 'Skip' text button top-right.\n\nImports: package:flutter/material.dart, dart:math\n\nOutput the COMPLETE file in a ```dart code block."
   }
 ]
