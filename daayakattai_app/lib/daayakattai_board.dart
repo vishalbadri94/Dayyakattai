@@ -156,68 +156,96 @@ class DaayakattaiBoardPainter extends CustomPainter {
 
   void _drawRawSilkBackground(Canvas canvas, Size size) {
     final Rect rect = Offset.zero & size;
-    final Paint paint = Paint()
+    
+    // Polished teak wood background
+    final Paint woodPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF6E1F1F), Color(0xFF581616), Color(0xFF3F0E0E)],
+        colors: [
+          Color(0xFF8B5A2B), // Teak brown
+          Color(0xFF704214), // Walnut brown
+          Color(0xFF5C3317), // Dark chocolate wood
+        ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(rect);
-    canvas.drawRect(rect, paint);
+    canvas.drawRect(rect, woodPaint);
 
-    final Paint threadLight = Paint()
-      ..color = const Color(0x12FFFFFF)
-      ..strokeWidth = 0.7;
-    final Paint threadDark = Paint()
-      ..color = const Color(0x0F000000)
-      ..strokeWidth = 0.7;
+    // Inner gold inlay border
+    final Paint goldInlay = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = const Color(0xFFD9A843);
+    canvas.drawRect(rect.deflate(12), goldInlay);
 
-    for (int i = 0; i < 36; i++) {
-      final double y = rect.top + (i / 35) * rect.height;
-      final Path path = Path()..moveTo(rect.left, y);
-      for (double x = rect.left; x <= rect.right; x += 5) {
-        path.lineTo(x, y + math.sin((x + i * 11) * 0.03) * 1.1);
-      }
-      canvas.drawPath(path, threadLight);
-    }
+    // Draw Gold Corner Labels: "தாயம்" (top-left) and "விளையாட்டு" (top-right)
+    const textStyle = TextStyle(
+      color: Color(0xFFD9A843),
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
+      fontFamily: 'Roboto', // uses fallback if not loaded
+    );
 
-    for (int i = 0; i < 36; i++) {
-      final double x = rect.left + (i / 35) * rect.width;
-      final Path path = Path()..moveTo(x, rect.top);
-      for (double y = rect.top; y <= rect.bottom; y += 5) {
-        path.lineTo(x + math.cos((y + i * 9) * 0.03) * 1.1, y);
-      }
-      canvas.drawPath(path, threadDark);
-    }
+    final TextPainter tpLeft = TextPainter(
+      text: const TextSpan(text: 'தாயம்', style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tpLeft.paint(canvas, rect.topLeft + const Offset(20, 20));
+
+    final TextPainter tpRight = TextPainter(
+      text: const TextSpan(text: 'விளையாட்டு', style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tpRight.paint(canvas, rect.topRight - Offset(tpRight.width + 20, -20));
   }
 
   void _drawBrassOuterFrame(Canvas canvas, Rect boardRect) {
-    final Rect outer = boardRect.inflate(6);
-    final RRect rrect = RRect.fromRectAndRadius(outer, const Radius.circular(14));
-    final Paint paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
-      ..shader = const LinearGradient(
-        colors: [
-          Color(0xFFF8E08E),
-          Color(0xFFD8A63E),
-          Color(0xFF8A6420),
-          Color(0xFFE8C565),
-        ],
-        stops: [0.0, 0.35, 0.7, 1.0],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ).createShader(outer);
-    canvas.drawRRect(rrect, paint);
+    // Keep a subtle gold framing around the active cross
   }
 
   void _drawGridCells(Canvas canvas, Rect boardRect) {
     final double cellW = boardRect.width / _gridSize;
     final double cellH = boardRect.height / _gridSize;
 
+    // Draw central HOME diagonal dividing lines (rows 2,3,4 & cols 2,3,4)
+    final Rect centerRect = Rect.fromLTWH(
+      boardRect.left + 2 * cellW,
+      boardRect.top + 2 * cellH,
+      cellW * 3,
+      cellH * 3,
+    );
+
+    // Paint center background
+    final Paint centerPaint = Paint()..color = const Color(0xFFF5E8C7);
+    canvas.drawRect(centerRect, centerPaint);
+
+    // Draw diagonal dividers on the center square
+    final Paint diagonalPaint = Paint()
+      ..color = const Color(0xFF3F0E0E)
+      ..strokeWidth = 1.8;
+    canvas.drawLine(centerRect.topLeft, centerRect.bottomRight, diagonalPaint);
+    canvas.drawLine(centerRect.topRight, centerRect.bottomLeft, diagonalPaint);
+
+    // Write "HOME" label in the triangles
+    const homeLabelStyle = TextStyle(
+      color: Color(0xFF3F0E0E),
+      fontSize: 10,
+      fontWeight: FontWeight.bold,
+    );
+    final TextPainter homePainter = TextPainter(
+      text: const TextSpan(text: 'HOME', style: homeLabelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    homePainter.paint(canvas, centerRect.center - Offset(homePainter.width / 2, homePainter.height / 2));
+
     for (int row = 0; row < _gridSize; row++) {
       for (int col = 0; col < _gridSize; col++) {
-        // Skip drawing the 2x2 corner squares completely to form a clean cruciform track
+        // Skip corner spaces
         if (DaayakattaiBoardGeometry.isUnusedCorner(row, col)) {
+          continue;
+        }
+
+        // Central HOME area is drawn above, skip cells here to keep the blank triangles visible
+        if (row >= 2 && row <= 4 && col >= 2 && col <= 4) {
           continue;
         }
 
@@ -228,54 +256,57 @@ class DaayakattaiBoardPainter extends CustomPainter {
           cellH,
         );
         final Rect fillRect = cellRect.deflate(1.4);
-        final bool safe = DaayakattaiBoardGeometry.isSafeCrossCell(row, col);
 
-        final Paint fillPaint = Paint()
-          ..shader = LinearGradient(
-            colors: safe
-                ? const [Color(0xFFEAD6AC), Color(0xFFDFC08A)]
-                : const [Color(0xFFF6ECD4), Color(0xFFEBDDB9)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ).createShader(fillRect);
+        // Safe (Malai) cell coloring matching reference image
+        Color cellColor = const Color(0xFFF6ECD4); // Default ivory cell
+        bool isSafe = false;
 
+        // West arm: row 3, cols 0..1, plus gate cell cols 1..2.
+        // Let's color based on arms:
+        if (row == 3 && col == 0) {
+          cellColor = const Color(0xFF9575CD); // Purple safe
+          isSafe = true;
+        } else if (row == 3 && col == 6) {
+          cellColor = const Color(0xFF81C784); // Green safe
+          isSafe = true;
+        } else if (col == 3 && (row == 0 || row == 6)) {
+          cellColor = const Color(0xFFE57373); // Red safe
+          isSafe = true;
+        } else if ((row == 2 && col == 1) || (row == 4 && col == 1)) {
+          cellColor = const Color(0xFFB39DDB); // Purple gates
+          isSafe = true;
+        } else if ((row == 2 && col == 5) || (row == 4 && col == 5)) {
+          cellColor = const Color(0xFFA5D6A7); // Green gates
+          isSafe = true;
+        } else if ((row == 1 && col == 3) || (row == 5 && col == 3)) {
+          cellColor = const Color(0xFFEF9A9A); // Red gates
+          isSafe = true;
+        }
+
+        final Paint fillPaint = Paint()..color = cellColor;
         canvas.drawRRect(
           RRect.fromRectAndRadius(fillRect, const Radius.circular(2.5)),
           fillPaint,
         );
 
+        // Cell borders
         final Paint borderPaint = Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2
-          ..shader = const LinearGradient(
-            colors: [Color(0xFFF3D67B), Color(0xFF8E6A2C)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ).createShader(fillRect);
+          ..color = const Color(0xFF3F0E0E);
 
         canvas.drawRRect(
           RRect.fromRectAndRadius(fillRect, const Radius.circular(2.5)),
           borderPaint,
         );
 
-        // Grid accents
-        canvas.drawLine(
-          fillRect.topLeft + const Offset(1.5, 1.5),
-          fillRect.topRight + const Offset(-1.5, 1.5),
-          Paint()
-            ..color = const Color(0x22FFFFFF)
-            ..strokeWidth = 0.8,
-        );
-        canvas.drawLine(
-          fillRect.bottomLeft + const Offset(1.5, -1.5),
-          fillRect.bottomRight + const Offset(-1.5, -1.5),
-          Paint()
-            ..color = const Color(0x1A3B1A0C)
-            ..strokeWidth = 0.8,
-        );
+        // Draw 'X' inside safe cells
+        if (isSafe) {
+          canvas.drawLine(fillRect.topLeft, fillRect.bottomRight, borderPaint);
+          canvas.drawLine(fillRect.topRight, fillRect.bottomLeft, borderPaint);
+        }
       }
     }
-
     // Draw lotuses on all safe squares
     for (int row = 0; row < _gridSize; row++) {
       for (int col = 0; col < _gridSize; col++) {
