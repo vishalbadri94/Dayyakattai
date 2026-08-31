@@ -1,7 +1,7 @@
 import 'dart:math';
 
 // ---------------------------------------------------------------------------
-// Daayakattai 7x7 Pure Dart Game Engine
+// Daayakattai 19x19 Pure Dart Game Engine
 // ---------------------------------------------------------------------------
 
 enum GameMode {
@@ -33,79 +33,199 @@ class BoardCoordinate {
 }
 
 class Board {
-  static const int outerLength = 24;
+  static const int outerLength = 72;
 
   static const List<BoardCoordinate> outerTrack = [
-    BoardCoordinate(0, 0),
-    BoardCoordinate(0, 1),
-    BoardCoordinate(0, 2),
-    BoardCoordinate(0, 3),
-    BoardCoordinate(0, 4),
-    BoardCoordinate(0, 5),
-    BoardCoordinate(0, 6),
-    BoardCoordinate(1, 6),
-    BoardCoordinate(2, 6),
-    BoardCoordinate(3, 6),
-    BoardCoordinate(4, 6),
-    BoardCoordinate(5, 6),
-    BoardCoordinate(6, 6),
-    BoardCoordinate(6, 5),
-    BoardCoordinate(6, 4),
-    BoardCoordinate(6, 3),
-    BoardCoordinate(6, 2),
-    BoardCoordinate(6, 1),
-    BoardCoordinate(6, 0),
-    BoardCoordinate(5, 0),
-    BoardCoordinate(4, 0),
-    BoardCoordinate(3, 0),
-    BoardCoordinate(2, 0),
-    BoardCoordinate(1, 0),
+    // North left edge: (7,8) up to (0,8)
+    BoardCoordinate(7, 8),
+    BoardCoordinate(6, 8),
+    BoardCoordinate(5, 8),
+    BoardCoordinate(4, 8),
+    BoardCoordinate(3, 8),
+    BoardCoordinate(2, 8),
+    BoardCoordinate(1, 8),
+    BoardCoordinate(0, 8),
+    // North tip: (0,8) -> (0,9) -> (0,10)
+    BoardCoordinate(0, 9),
+    BoardCoordinate(0, 10),
+    // North right edge: (0,10) down to (7,10)
+    BoardCoordinate(1, 10),
+    BoardCoordinate(2, 10),
+    BoardCoordinate(3, 10),
+    BoardCoordinate(4, 10),
+    BoardCoordinate(5, 10),
+    BoardCoordinate(6, 10),
+    BoardCoordinate(7, 10),
+    // East top edge: (8,11) right to (8,18)
+    BoardCoordinate(8, 11),
+    BoardCoordinate(8, 12),
+    BoardCoordinate(8, 13),
+    BoardCoordinate(8, 14),
+    BoardCoordinate(8, 15),
+    BoardCoordinate(8, 16),
+    BoardCoordinate(8, 17),
+    BoardCoordinate(8, 18),
+    // East tip: (8,18) -> (9,18) -> (10,18)
+    BoardCoordinate(9, 18),
+    BoardCoordinate(10, 18),
+    // East bottom edge: (10,18) left to (10,11)
+    BoardCoordinate(10, 17),
+    BoardCoordinate(10, 16),
+    BoardCoordinate(10, 15),
+    BoardCoordinate(10, 14),
+    BoardCoordinate(10, 13),
+    BoardCoordinate(10, 12),
+    BoardCoordinate(10, 11),
+    // South right edge: (11,10) down to (18,10)
+    BoardCoordinate(11, 10),
+    BoardCoordinate(12, 10),
+    BoardCoordinate(13, 10),
+    BoardCoordinate(14, 10),
+    BoardCoordinate(15, 10),
+    BoardCoordinate(16, 10),
+    BoardCoordinate(17, 10),
+    BoardCoordinate(18, 10),
+    // South tip: (18,10) -> (18,9) -> (18,8)
+    BoardCoordinate(18, 9),
+    BoardCoordinate(18, 8),
+    // South left edge: (18,8) up to (11,8)
+    BoardCoordinate(17, 8),
+    BoardCoordinate(16, 8),
+    BoardCoordinate(15, 8),
+    BoardCoordinate(14, 8),
+    BoardCoordinate(13, 8),
+    BoardCoordinate(12, 8),
+    BoardCoordinate(11, 8),
+    // West bottom edge: (10,7) left to (10,0)
+    BoardCoordinate(10, 7),
+    BoardCoordinate(10, 6),
+    BoardCoordinate(10, 5),
+    BoardCoordinate(10, 4),
+    BoardCoordinate(10, 3),
+    BoardCoordinate(10, 2),
+    BoardCoordinate(10, 1),
+    BoardCoordinate(10, 0),
+    // West tip: (10,0) -> (9,0) -> (8,0)
+    BoardCoordinate(9, 0),
+    BoardCoordinate(8, 0),
+    // West top edge: (8,0) right to (8,7)
+    BoardCoordinate(8, 1),
+    BoardCoordinate(8, 2),
+    BoardCoordinate(8, 3),
+    BoardCoordinate(8, 4),
+    BoardCoordinate(8, 5),
+    BoardCoordinate(8, 6),
+    BoardCoordinate(8, 7),
   ];
 
   /// The 9 symmetric cross positions (Malai / safe cells).
   static final Set<BoardCoordinate> malaiCells = {
-    BoardCoordinate(0, 3), // Top starting gate
-    BoardCoordinate(1, 3),
-    BoardCoordinate(2, 3),
-    BoardCoordinate(3, 3), // Center goal
-    BoardCoordinate(4, 3),
-    BoardCoordinate(5, 3),
-    BoardCoordinate(6, 3), // Bottom starting gate
-    BoardCoordinate(3, 0), // Left starting gate
-    BoardCoordinate(3, 1),
-    BoardCoordinate(3, 2),
-    BoardCoordinate(3, 4),
-    BoardCoordinate(3, 5),
-    BoardCoordinate(3, 6), // Right starting gate
+    // Arm tips
+    BoardCoordinate(0, 9), // North tip
+    BoardCoordinate(9, 18), // East tip
+    BoardCoordinate(18, 9), // South tip
+    BoardCoordinate(9, 0), // West tip
+    // Starting gates
+    BoardCoordinate(7, 9), // North gate
+    BoardCoordinate(9, 11), // East gate
+    BoardCoordinate(11, 9), // South gate
+    BoardCoordinate(9, 7), // West gate
+    // Inner path cells (all cells from gate to center)
+    // North inner path
+    BoardCoordinate(6, 9),
+    BoardCoordinate(5, 9),
+    BoardCoordinate(4, 9),
+    BoardCoordinate(3, 9),
+    BoardCoordinate(2, 9),
+    BoardCoordinate(1, 9),
+    // East inner path
+    BoardCoordinate(9, 17),
+    BoardCoordinate(9, 16),
+    BoardCoordinate(9, 15),
+    BoardCoordinate(9, 14),
+    BoardCoordinate(9, 13),
+    BoardCoordinate(9, 12),
+    // South inner path
+    BoardCoordinate(12, 9),
+    BoardCoordinate(13, 9),
+    BoardCoordinate(14, 9),
+    BoardCoordinate(15, 9),
+    BoardCoordinate(16, 9),
+    BoardCoordinate(17, 9),
+    // West inner path
+    BoardCoordinate(9, 1),
+    BoardCoordinate(9, 2),
+    BoardCoordinate(9, 3),
+    BoardCoordinate(9, 4),
+    BoardCoordinate(9, 5),
+    BoardCoordinate(9, 6),
+    // Center HOME
+    BoardCoordinate(8, 9),
+    BoardCoordinate(9, 9),
+    BoardCoordinate(10, 9),
+    BoardCoordinate(8, 10),
+    BoardCoordinate(9, 10),
+    BoardCoordinate(10, 10),
+    BoardCoordinate(8, 8),
+    BoardCoordinate(9, 8),
+    BoardCoordinate(10, 8),
   };
 
   /// Inner Pazham track arm for each player index:
   /// 0 = top, 1 = right, 2 = bottom, 3 = left.
   static const List<List<BoardCoordinate>> innerPaths = [
+    // Top player: from (0,9) down to (8,9)
     [
-      BoardCoordinate(1, 3),
-      BoardCoordinate(2, 3),
-      BoardCoordinate(3, 3),
+      BoardCoordinate(0, 9),
+      BoardCoordinate(1, 9),
+      BoardCoordinate(2, 9),
+      BoardCoordinate(3, 9),
+      BoardCoordinate(4, 9),
+      BoardCoordinate(5, 9),
+      BoardCoordinate(6, 9),
+      BoardCoordinate(7, 9),
+      BoardCoordinate(8, 9),
     ],
+    // Right player: from (9,18) left to (9,10)
     [
-      BoardCoordinate(3, 5),
-      BoardCoordinate(3, 4),
-      BoardCoordinate(3, 3),
+      BoardCoordinate(9, 18),
+      BoardCoordinate(9, 17),
+      BoardCoordinate(9, 16),
+      BoardCoordinate(9, 15),
+      BoardCoordinate(9, 14),
+      BoardCoordinate(9, 13),
+      BoardCoordinate(9, 12),
+      BoardCoordinate(9, 11),
+      BoardCoordinate(9, 10),
     ],
+    // Bottom player: from (18,9) up to (10,9)
     [
-      BoardCoordinate(5, 3),
-      BoardCoordinate(4, 3),
-      BoardCoordinate(3, 3),
+      BoardCoordinate(18, 9),
+      BoardCoordinate(17, 9),
+      BoardCoordinate(16, 9),
+      BoardCoordinate(15, 9),
+      BoardCoordinate(14, 9),
+      BoardCoordinate(13, 9),
+      BoardCoordinate(12, 9),
+      BoardCoordinate(11, 9),
+      BoardCoordinate(10, 9),
     ],
+    // Left player: from (9,0) right to (9,8)
     [
-      BoardCoordinate(3, 1),
-      BoardCoordinate(3, 2),
-      BoardCoordinate(3, 3),
+      BoardCoordinate(9, 0),
+      BoardCoordinate(9, 1),
+      BoardCoordinate(9, 2),
+      BoardCoordinate(9, 3),
+      BoardCoordinate(9, 4),
+      BoardCoordinate(9, 5),
+      BoardCoordinate(9, 6),
+      BoardCoordinate(9, 7),
+      BoardCoordinate(9, 8),
     ],
   ];
 
   /// The four outer-track entrance points.
-  static const List<int> startOuterIndices = [3, 9, 15, 21];
+  static const List<int> startOuterIndices = [7, 23, 39, 55];
 
   static bool isMalai(BoardCoordinate coordinate) {
     return malaiCells.contains(coordinate);

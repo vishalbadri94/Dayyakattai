@@ -58,14 +58,14 @@ void main() {
       final game = DaayakattaiGame(mode: GameMode.twoPlayer, random: mockRand);
       final p0 = game.currentPlayer;
 
-      // Put a piece at absolute outer index 3 (Player 0 startOuterIndex is 3)
+      // Put a piece at absolute outer index 7 (Player 0 startOuterIndex is 7)
       game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: 0);
 
       // Verify Player 0 has no Vettu yet
       expect(p0.hasVettu, isFalse);
 
-      // Loop piece to gate (outerSteps = 24)
-      game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: 24);
+      // Loop piece to gate (outerSteps = 72)
+      game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: 72);
       expect(p0.pieces[0].atGate, isTrue);
       
       // Ensure it cannot move to inner without cut
@@ -80,18 +80,18 @@ void main() {
       final p0 = game.players[0];
       final p1 = game.players[1];
 
-      // Form a Jodu pair on outer index 5 (Player 0 starts at index 3 -> outerSteps: 2)
+      // Form a Jodu pair on outer index 9 (Player 0 starts at index 7 -> outerSteps: 2)
       game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: 2);
       game.debugSetupPiece(0, 1, PieceState.outer, outerSteps: 2);
 
-      expect(p0.pieces[0].outerIndex, equals(5));
-      expect(p0.pieces[1].outerIndex, equals(5));
+      expect(p0.pieces[0].outerIndex, equals(9));
+      expect(p0.pieces[1].outerIndex, equals(9));
 
-      // Player 1 starts at index 9. Place opponent right at index 5 (outerSteps: 20)
-      game.debugSetupPiece(1, 0, PieceState.outer, outerSteps: 20);
+      // Player 1 starts at index 23. Place opponent right at index 9 (outerSteps: 58)
+      game.debugSetupPiece(1, 0, PieceState.outer, outerSteps: 58);
 
       // Verify landing is blocked
-      final targetCoord = Board.outerTrack[5];
+      final targetCoord = Board.outerTrack[9];
       final canLand = game.canLandOn(targetCoord, p1);
       expect(canLand, isFalse);
     });

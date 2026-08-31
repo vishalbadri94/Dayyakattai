@@ -74,24 +74,24 @@ void main() {
       final p0 = game.players[0];
       final p1 = game.players[1];
 
-      // Player 0 starts at index 3. To place pieces at absolute index 5,
-      // we need outerSteps = (5 - 3 + 24) % 24 = 2
+      // Player 0 starts at index 7. To place pieces at absolute index 9 (safe cell),
+      // we need outerSteps = (9 - 7 + 72) % 72 = 2
       game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: 2);
       game.debugSetupPiece(0, 1, PieceState.outer, outerSteps: 2);
 
-      // Verify they form a pair on outer cell 5
-      expect(p0.pieces[0].outerIndex, equals(5));
-      expect(p0.pieces[1].outerIndex, equals(5));
+      // Verify they form a pair on outer cell 9
+      expect(p0.pieces[0].outerIndex, equals(9));
+      expect(p0.pieces[1].outerIndex, equals(9));
 
-      // Player 1 starts at index 9. To place a piece at absolute index 5,
-      // we need outerSteps = (5 - 9 + 24) % 24 = 20
-      game.debugSetupPiece(1, 0, PieceState.outer, outerSteps: 20);
+      // Player 1 starts at index 23. To place a piece at absolute index 9,
+      // we need outerSteps = (9 - 23 + 72) % 72 = 58
+      game.debugSetupPiece(1, 0, PieceState.outer, outerSteps: 58);
       
-      // Verify Player 1's piece is at index 5
-      expect(p1.pieces[0].outerIndex, equals(5));
+      // Verify Player 1's piece is at index 9
+      expect(p1.pieces[0].outerIndex, equals(9));
 
-      // Since cell 5 is unsafe and occupied by Player 0's pair, it should block Player 1.
-      final targetCoord = Board.outerTrack[5];
+      // Since cell 9 is safe and occupied by Player 0's pair, it should block Player 1.
+      final targetCoord = Board.outerTrack[9];
       final canLand = game.canLandOn(targetCoord, p1);
       expect(canLand, isFalse); // Blocked by Jodu!
     });

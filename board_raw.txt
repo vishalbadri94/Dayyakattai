@@ -1,3 +1,4 @@
+```dart
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'daayakattai_engine.dart';
@@ -39,17 +40,17 @@ extension DaayakattaiTeamX on DaayakattaiTeam {
 }
 
 class DaayakattaiBoardGeometry {
-  /// Check if a cell is one of the four unused 8x8 corners (home areas).
+  /// Check if a cell is one of the four unused 8x8 corner areas (home areas).
   static bool isUnusedCorner(int row, int col) {
     return (row < 8 && col < 8) || // Top-Left
         (row < 8 && col > 10) ||    // Top-Right
         (row > 10 && col < 8) ||    // Bottom-Left
-        (row > 10 && col > 10);      // Bottom-Right
+        (row > 10 && col > 10);     // Bottom-Right
   }
 
-  /// Safe cross cells: tips, gates, and inner path cells.
+  /// Safe cross cells: tips of arms, gates, and inner path cells.
   static bool isSafeCrossCell(int row, int col) {
-    // Tips
+    // Tips of arms
     if ((row == 9 && col == 0) || (row == 9 && col == 18) ||
         (row == 0 && col == 9) || (row == 18 && col == 9)) {
       return true;
@@ -124,8 +125,8 @@ class DaayakattaiBoardGeometry {
       // 4-player or less: nice big 2x2 grid
       final int row = pieceId ~/ 2;
       final int col = pieceId % 2;
-      final double dx = (col - 0.5) * cellW * 0.9;
-      final double dy = (row - 0.5) * cellH * 0.9;
+      final double dx = (col - 0.5) * cellW * 0.45;
+      final double dy = (row - 0.5) * cellH * 0.45;
       return cornerCenter + Offset(dx, dy);
     } else {
       // 6, 8, 12 players: compact 3x4 grid to fit up to 12 pieces in the corner
@@ -133,8 +134,8 @@ class DaayakattaiBoardGeometry {
       final int totalRank = playerRank * 4 + pieceId;
       final int row = totalRank ~/ 4;
       final int col = totalRank % 4;
-      final double dx = (col - 1.5) * cellW * 0.6;
-      final double dy = (row - 1.0) * cellH * 0.6;
+      final double dx = (col - 1.5) * cellW * 0.28;
+      final double dy = (row - 1.0) * cellH * 0.28;
       return cornerCenter + Offset(dx, dy);
     }
   }
@@ -279,51 +280,31 @@ class DaayakattaiBoardPainter extends CustomPainter {
         Color cellColor = const Color(0xFFF6ECD4); // Default ivory cell
         bool isSafe = false;
 
-        // Visual coloring for gates, tips, and paths to match the original team accents
-        if ((row == 9 && col == 0) || (row == 9 && col == 7) || (row == 9 && col >= 1 && col <= 6)) {
-          // West: Purple accents
-          if (row == 9 && col == 0) {
-            cellColor = const Color(0xFF9575CD); // West tip
-            isSafe = true;
-          } else if (row == 9 && col == 7) {
-            cellColor = const Color(0xFFB39DDB); // West gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFEDE7F6); // West inner path
-          }
-        } else if ((row == 9 && col == 18) || (row == 9 && col == 11) || (row == 9 && col >= 12 && col <= 17)) {
-          // East: Green accents
-          if (row == 9 && col == 18) {
-            cellColor = const Color(0xFF81C784); // East tip
-            isSafe = true;
-          } else if (row == 9 && col == 11) {
-            cellColor = const Color(0xFFA5D6A7); // East gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFE8F5E9); // East inner path
-          }
-        } else if ((row == 0 && col == 9) || (row == 7 && col == 9) || (col == 9 && row >= 1 && row <= 6)) {
-          // North: Red accents
-          if (row == 0 && col == 9) {
-            cellColor = const Color(0xFFE57373); // North tip
-            isSafe = true;
-          } else if (row == 7 && col == 9) {
-            cellColor = const Color(0xFFEF9A9A); // North gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFFFEBEE); // North inner path
-          }
-        } else if ((row == 18 && col == 9) || (row == 11 && col == 9) || (col == 9 && row >= 12 && row <= 17)) {
-          // South: Yellow/Red accents
-          if (row == 18 && col == 9) {
-            cellColor = const Color(0xFFE57373); // South tip
-            isSafe = true;
-          } else if (row == 11 && col == 9) {
-            cellColor = const Color(0xFFEF9A9A); // South gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFFFEBEE); // South inner path
-          }
+        // West arm: row 9, cols 0..7
+        if (row == 9 && col >= 0 && col <= 7) {
+          cellColor = const Color(0xFF9575CD); // Purple safe
+          isSafe = true;
+        } else if (row == 9 && col >= 11 && col <= 18) {
+          cellColor = const Color(0xFF81C784); // Green safe
+          isSafe = true;
+        } else if (col == 9 && row >= 0 && row <= 7) {
+          cellColor = const Color(0xFFE57373); // Red safe
+          isSafe = true;
+        } else if (col == 9 && row >= 11 && row <= 18) {
+          cellColor = const Color(0xFF64B5F6); // Blue safe
+          isSafe = true;
+        } else if ((row == 7 && col == 8) || (row == 11 && col == 8)) {
+          cellColor = const Color(0xFFB39DDB); // Purple gates
+          isSafe = true;
+        } else if ((row == 7 && col == 10) || (row == 11 && col == 10)) {
+          cellColor = const Color(0xFFA5D6A7); // Green gates
+          isSafe = true;
+        } else if ((row == 8 && col == 7) || (row == 8 && col == 11)) {
+          cellColor = const Color(0xFFEF9A9A); // Red gates
+          isSafe = true;
+        } else if ((row == 10 && col == 7) || (row == 10 && col == 11)) {
+          cellColor = const Color(0xFF90CAF9); // Blue gates
+          isSafe = true;
         }
 
         final Paint fillPaint = Paint()..color = cellColor;
@@ -429,7 +410,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveFromCell!.x, moveFromCell!.y);
               
           final toCenter = moveToCell!.x == -2 // -2 flag represents Finished State
-              ? DaayakattaiBoardGeometry.cellCenter(boardRect, 3, 3)
+              ? DaayakattaiBoardGeometry.cellCenter(boardRect, 9, 9)
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveToCell!.x, moveToCell!.y);
               
           center = Offset.lerp(fromCenter, toCenter, moveProgress.clamp(0.0, 1.0))!;
@@ -920,314 +901,4 @@ Widget build(BuildContext context) {
                 Navigator.pop(context); // Pop dialog
                 Navigator.pop(context); // Go back to dashboard screen
               },
-              child: const Text('Back to Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
-            )
-          ],
-        ),
-      );
-    }
-  }
-
-  void _rollDice() {
-    if (_moveController.isAnimating || !_game.needsRoll) return;
-
-    setState(() {
-      final roll = _game.rollDice();
-
-      // Speak the rolled value
-      _audio.speakRoll(roll.value);
-
-      if (_game.consecutiveBonusCount == 0 && roll.grantsExtra) {
-        // Three consecutive bonus rolls = forfeit
-        _audio.speakForfeit();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Three consecutive bonus rolls! Turn forfeited.')),
-        );
-      }
-
-      _updateHighlights();
-    });
-  }
-
-  void _updateHighlights() {
-    final legalMoves = _game.getLegalMoves();
-    if (legalMoves.isNotEmpty) {
-      _validPieceKeys = legalMoves.map((m) => '${_game.currentPlayerIndex}-${m.pieceId}').toSet();
-      _pulseController.repeat(reverse: true);
-    } else {
-      _validPieceKeys.clear();
-      _pulseController.stop();
-      _pulseController.value = 0;
-
-      // If we have rolls but no legal moves, auto-skip the roll to keep the game moving
-      if (_game.hasPendingRolls && !_game.needsRoll) {
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (mounted) {
-            setState(() {
-              _game.skipCurrentRoll();
-              _updateHighlights();
-            });
-          }
-        });
-      }
-    }
-  }
-
-  void _handleTapUp(TapUpDetails details) {
-    if (!_game.hasPendingRolls || _moveController.isAnimating || _movingPieceKey != null) {
-      return;
-    }
-
-    final RenderBox? box = _boardKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null) return;
-
-    final Offset local = box.globalToLocal(details.globalPosition);
-    final Rect rect = DaayakattaiBoardGeometry.boardRect(box.size);
-    if (!rect.contains(local)) return;
-
-    final double cellW = rect.width / _gridSize;
-    final double cellH = rect.height / _gridSize;
-
-    final int row = ((local.dy - rect.top) ~/ cellH).clamp(0, _gridSize - 1).toInt();
-    final int col = ((local.dx - rect.left) ~/ cellW).clamp(0, _gridSize - 1).toInt();
-
-    // Check if user tapped a piece
-    final player = _game.currentPlayer;
-    final legalMoves = _game.getLegalMoves();
-    
-    for (final move in legalMoves) {
-      final piece = player.pieces[move.pieceId];
-      
-      // Determine if tap coordinates match piece location
-      bool tapped = false;
-      if (piece.state == PieceState.home) {
-        // Tapped inside the player's 2x2 home corner
-        tapped = DaayakattaiBoardGeometry.isUnusedCorner(row, col) &&
-            ((player.teamId == 0 && row < 3 && col < 3) ||
-             (player.teamId == 1 && row < 3 && col >= 4) ||
-             (player.teamId == 2 && row >= 4 && col >= 4) ||
-             (player.teamId == 3 && row >= 4 && col < 3));
-      } else {
-        final coord = piece.coordinate;
-        tapped = (coord != null && coord.x == row && coord.y == col);
-      }
-
-      if (tapped) {
-        _executeMove(move, piece);
-        break;
-      }
-    }
-  }
-
-  void _executeMove(Move move, Piece piece) {
-    // Setup animations
-    BoardCoordinate fromCoord;
-    if (piece.state == PieceState.home) {
-      fromCoord = const BoardCoordinate(-1, -1); // Flag representing home state
-    } else {
-      fromCoord = piece.coordinate!;
-    }
-
-    BoardCoordinate toCoord;
-    if (move.kind == MoveKind.finish) {
-      toCoord = const BoardCoordinate(-2, -2); // Flag representing finished state
-    } else if (move.kind == MoveKind.outerMove || move.kind == MoveKind.deploy) {
-      toCoord = Board.coordinateAt(move.targetIndex);
-    } else if (move.kind == MoveKind.enterInner || move.kind == MoveKind.innerMove) {
-      toCoord = _game.currentPlayer.innerPath[move.targetIndex];
-    } else {
-      return;
-    }
-
-    setState(() {
-      _pendingMove = move;
-      _movingPieceKey = '${_game.currentPlayerIndex}-${piece.id}';
-      _moveFromCell = fromCoord;
-      _moveToCell = toCoord;
-      _validPieceKeys.clear();
-      _pulseController.stop();
-      _pulseController.value = 0;
-    });
-
-    _moveController.forward(from: 0);
-  }
-
-  // ==================== SCENARIO TESTER METHODS ====================
-
-  void _showScenarioTester() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF3F0E0E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: Color(0xFFD9A843), width: 2),
-        ),
-        title: const Text(
-          'Scenario Tester',
-          style: TextStyle(color: Color(0xFFF1E4C4), fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildScenarioButton(
-              icon: Icons.warning_amber,
-              label: 'Forfeit Forfeiture (3-Strike)',
-              onTap: _scenarioForfeitForfeiture,
-            ),
-            _buildScenarioButton(
-              icon: Icons.block,
-              label: 'Jodu Block (Pairs Blocking)',
-              onTap: _scenarioJoduBlock,
-            ),
-            _buildScenarioButton(
-              icon: Icons.lock,
-              label: 'Vettu Lock (Entry Blocked)',
-              onTap: _scenarioVettuLock,
-            ),
-            _buildScenarioButton(
-              icon: Icons.lock_open,
-              label: 'Vettu Unlock (Inner Access)',
-              onTap: _scenarioVettuUnlock,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: Color(0xFFD9A843))),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScenarioButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        onTap: () {
-          Navigator.pop(context);
-          onTap();
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF581616),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFD9A843), width: 1),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: const Color(0xFFD9A843)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: Color(0xFFF1E4C4),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _scenarioForfeitForfeiture() {
-    setState(() {
-      _currentMode = GameMode.twoPlayer;
-      _game = DaayakattaiGame(mode: _currentMode);
-      
-      // Add two bonus rolls to pending rolls
-      _game.debugAddPendingRoll(12);
-      _game.debugAddPendingRoll(1);
-      
-      // Set consecutive bonus count to 2
-      _game.debugSetConsecutiveBonusCount(2);
-      
-      // Override rolling phase to true so player must roll once more
-      _game.debugSetNeedsRoll(true);
-      
-      _validPieceKeys.clear();
-      _pulseController.stop();
-      _pulseController.value = 0;
-    });
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Scenario: Roll once more to trigger 3-strike forfeit!')),
-      );
-    }
-  }
-
-  void _scenarioJoduBlock() {
-    Navigator.pop(context);
-    setState(() {
-      _currentMode = GameMode.fourPlayerTeams;
-      _game = DaayakattaiGame(mode: _currentMode);
-      // Place Player 0 pieces 0 and 1 at outer index 5 (Jodu pair)
-      _game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: 5);
-      _game.debugSetupPiece(0, 1, PieceState.outer, outerSteps: 5);
-      // Place Player 1 piece 0 at outer index 3 (behind the pair)
-      _game.debugSetupPiece(1, 0, PieceState.outer, outerSteps: 3);
-      // Set Player 1's turn with a queued roll of 2
-      _game.debugAddPendingRoll(2);
-      _game.debugSetupGameState(currentPlayerIndex: 1, rollingPhase: false);
-      _updateHighlights();
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Scenario: Player 2 tries to land on Player 1\'s pair (blocked!)')),
-      );
-    }
-  }
-
-  void _scenarioVettuLock() {
-    Navigator.pop(context);
-    setState(() {
-      _currentMode = GameMode.twoPlayer;
-      _game = DaayakattaiGame(mode: _currentMode);
-      // Place Player 0 piece 0 at the inner track gate (outerLength = 24)
-      _game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: Board.outerLength);
-      // hasVettu defaults to false on new game
-      _game.debugAddPendingRoll(3);
-      _game.debugSetupGameState(currentPlayerIndex: 0, rollingPhase: false);
-      _updateHighlights();
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Scenario: Enter inner track without a capture (blocked!)')),
-      );
-    }
-  }
-
-  void _scenarioVettuUnlock() {
-    Navigator.pop(context);
-    setState(() {
-      _currentMode = GameMode.twoPlayer;
-      _game = DaayakattaiGame(mode: _currentMode);
-      // Place Player 0 piece 0 at the inner track gate
-      _game.debugSetupPiece(0, 0, PieceState.outer, outerSteps: Board.outerLength);
-      // Grant hasVettu so entry to inner track is allowed
-      _game.players[0].hasVettu = true;
-      _game.debugAddPendingRoll(3);
-      _game.debugSetupGameState(currentPlayerIndex: 0, rollingPhase: false);
-      _updateHighlights();
-    });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Scenario: Enter inner track after a capture (Allowed!)')),
-      );
-    }
-  }
-}
+              child: const Text
