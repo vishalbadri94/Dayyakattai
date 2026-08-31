@@ -250,7 +250,7 @@ class _AgoraVideoHeaderState extends State<AgoraVideoHeader>
         builder: (context, constraints) {
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
-          final boardSize = math.min(w, h) * 0.55;
+          final boardSize = math.min(w, h) * 0.90;
 
           return Stack(
             clipBehavior: Clip.none,
