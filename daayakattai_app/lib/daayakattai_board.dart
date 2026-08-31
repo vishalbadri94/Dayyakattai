@@ -6,7 +6,7 @@ import 'services/daayakattai_audio_service.dart';
 import 'widgets/dice_animation_widget.dart';
 import 'services/daayakattai_share_service.dart';
 
-const int _gridSize = 19;
+const int _gridSize = 15;
 
 const Color _kCellIvory = Color(0xFFF0E3C4);
 const Color _kAccentRed = Color(0xFFB5472D);
@@ -49,35 +49,31 @@ extension DaayakattaiTeamX on DaayakattaiTeam {
 }
 
 class DaayakattaiBoardGeometry {
-  /// Check if a cell is one of the four unused 8x8 corners (home areas).
+  /// Check if a cell is one of the four unused 6x6 corners (home areas).
   static bool isUnusedCorner(int row, int col) {
-    return (row < 8 && col < 8) || // Top-Left
-        (row < 8 && col > 10) ||    // Top-Right
-        (row > 10 && col < 8) ||    // Bottom-Left
-        (row > 10 && col > 10);      // Bottom-Right
+    return (row < 6 && col < 6) || // Top-Left
+        (row < 6 && col > 8) ||    // Top-Right
+        (row > 8 && col < 6) ||    // Bottom-Left
+        (row > 8 && col > 8);       // Bottom-Right
   }
 
   /// Safe cross cells: tips, gates, and inner path cells.
   static bool isSafeCrossCell(int row, int col) {
     // Tips
-    if ((row == 9 && col == 0) || (row == 9 && col == 18) ||
-        (row == 0 && col == 9) || (row == 18 && col == 9)) {
+    if ((row == 7 && col == 0) || (row == 7 && col == 14) ||
+        (row == 0 && col == 7) || (row == 14 && col == 7)) {
       return true;
     }
     // Gates
-    if ((row == 9 && col == 7) || (row == 9 && col == 11) ||
-        (row == 7 && col == 9) || (row == 11 && col == 9)) {
+    if ((row == 7 && col == 5) || (row == 7 && col == 9) ||
+        (row == 5 && col == 7) || (row == 9 && col == 7)) {
       return true;
     }
-    // Inner path cells (from gates to center)
-    // North inner: col 9, rows 1-7
-    if (col == 9 && row >= 1 && row <= 7) return true;
-    // South inner: col 9, rows 11-17
-    if (col == 9 && row >= 11 && row <= 17) return true;
-    // West inner: row 9, cols 1-7
-    if (row == 9 && col >= 1 && col <= 7) return true;
-    // East inner: row 9, cols 11-17
-    if (row == 9 && col >= 11 && col <= 17) return true;
+    // Inner path cells (from gates to tips)
+    if (row == 7 && col >= 1 && col <= 5) return true;
+    if (row == 7 && col >= 9 && col <= 13) return true;
+    if (col == 7 && row >= 1 && row <= 5) return true;
+    if (col == 7 && row >= 9 && row <= 13) return true;
     return false;
   }
 
@@ -98,28 +94,28 @@ class DaayakattaiBoardGeometry {
     );
   }
 
-  /// Calculates visual offset for home base pieces in the 8x8 corner areas.
+  /// Calculates visual offset for home base pieces in the 6x6 corner areas.
   static Offset homePieceOffset(Rect boardRect, int playerId, int pieceId) {
     int startRow = 0;
     int startCol = 0;
 
     final int teamId = playerId % 4;
     switch (teamId) {
-      case 0: // Red: Top-Left (3,3)
-        startRow = 3;
-        startCol = 3;
+      case 0: // Red: Top-Left (2,2)
+        startRow = 2;
+        startCol = 2;
         break;
-      case 1: // Blue: Top-Right (3,13)
-        startRow = 3;
-        startCol = 13;
+      case 1: // Blue: Top-Right (2,11)
+        startRow = 2;
+        startCol = 11;
         break;
-      case 2: // Green: Bottom-Right (13,13)
-        startRow = 13;
-        startCol = 13;
+      case 2: // Green: Bottom-Right (11,11)
+        startRow = 11;
+        startCol = 11;
         break;
-      case 3: // Yellow: Bottom-Left (13,3)
-        startRow = 13;
-        startCol = 3;
+      case 3: // Yellow: Bottom-Left (11,2)
+        startRow = 11;
+        startCol = 2;
         break;
     }
 
@@ -322,8 +318,8 @@ class DaayakattaiBoardPainter extends CustomPainter {
 
     // Center HOME square.
     final Rect centerRect = Rect.fromLTWH(
-      boardRect.left + 8 * cellW,
-      boardRect.top + 8 * cellH,
+      boardRect.left + 6 * cellW,
+      boardRect.top + 6 * cellH,
       cellW * 3,
       cellH * 3,
     );
@@ -337,7 +333,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
         }
 
         // Central HOME area is drawn above, so skip center cells.
-        if (row >= 8 && row <= 10 && col >= 8 && col <= 10) {
+        if (row >= 6 && row <= 8 && col >= 6 && col <= 8) {
           continue;
         }
 
@@ -350,13 +346,13 @@ class DaayakattaiBoardPainter extends CustomPainter {
         final Rect fillRect = cellRect.deflate(1.4);
 
         Color cellColor = _kCellIvory;
-        if (row == 9 && col <= 7) {
+        if (row == 7 && col <= 5) {
           cellColor = const Color(0xFFE1E9F2);
-        } else if (row == 9 && col >= 11) {
+        } else if (row == 7 && col >= 9) {
           cellColor = const Color(0xFFDDE9DB);
-        } else if (col == 9 && row <= 7) {
+        } else if (col == 7 && row <= 5) {
           cellColor = const Color(0xFFF3DEDA);
-        } else if (col == 9 && row >= 11) {
+        } else if (col == 7 && row >= 9) {
           cellColor = const Color(0xFFF3E2CF);
         }
 
@@ -383,14 +379,15 @@ class DaayakattaiBoardPainter extends CustomPainter {
       }
     }
 
+    _drawJunctionMarks(canvas, boardRect, cellW, cellH);
     _drawDiceSticks(canvas, boardRect, cellW, cellH);
   }
 
   Color? _safeXColor(int row, int col) {
-    if (row == 9 && col <= 7) return _kSafeBlue;
-    if (row == 9 && col >= 11) return _kSafeGreen;
-    if (col == 9 && row <= 7) return _kSafeRed;
-    if (col == 9 && row >= 11) return _kSafeOrange;
+    if (row == 7 && col <= 5) return _kSafeBlue;
+    if (row == 7 && col >= 9) return _kSafeGreen;
+    if (col == 7 && row <= 5) return _kSafeRed;
+    if (col == 7 && row >= 9) return _kSafeOrange;
     return null;
   }
 
@@ -419,6 +416,44 @@ class DaayakattaiBoardPainter extends CustomPainter {
 
     canvas.drawLine(rect.topLeft, rect.bottomRight, paint);
     canvas.drawLine(rect.topRight, rect.bottomLeft, paint);
+  }
+
+  void _drawJunctionMarks(Canvas canvas, Rect boardRect, double cellW, double cellH) {
+    // North-West junction
+    final Rect nw = Rect.fromLTWH(
+      boardRect.left + 5 * cellW,
+      boardRect.top + 5 * cellH,
+      cellW,
+      cellH,
+    );
+    _drawSafeX(canvas, nw.deflate(1.4), _kSafeRed);
+
+    // North-East junction
+    final Rect ne = Rect.fromLTWH(
+      boardRect.left + 9 * cellW,
+      boardRect.top + 5 * cellH,
+      cellW,
+      cellH,
+    );
+    _drawSafeX(canvas, ne.deflate(1.4), _kSafeBlue);
+
+    // South-West junction
+    final Rect sw = Rect.fromLTWH(
+      boardRect.left + 5 * cellW,
+      boardRect.top + 9 * cellH,
+      cellW,
+      cellH,
+    );
+    _drawSafeX(canvas, sw.deflate(1.4), _kSafeOrange);
+
+    // South-East junction
+    final Rect se = Rect.fromLTWH(
+      boardRect.left + 9 * cellW,
+      boardRect.top + 9 * cellH,
+      cellW,
+      cellH,
+    );
+    _drawSafeX(canvas, se.deflate(1.4), _kSafeGreen);
   }
 
   void _drawCornerPlatforms(Canvas canvas, Rect boardRect, double cellW, double cellH) {
@@ -456,23 +491,23 @@ class DaayakattaiBoardPainter extends CustomPainter {
     }
 
     build(
-      Rect.fromLTWH(boardRect.left, boardRect.top, cellW * 8, cellH * 8),
+      Rect.fromLTWH(boardRect.left, boardRect.top, cellW * 6, cellH * 6),
       Alignment.topLeft,
     );
     build(
-      Rect.fromLTWH(boardRect.right - cellW * 8, boardRect.top, cellW * 8, cellH * 8),
+      Rect.fromLTWH(boardRect.right - cellW * 6, boardRect.top, cellW * 6, cellH * 6),
       Alignment.topRight,
     );
     build(
-      Rect.fromLTWH(boardRect.left, boardRect.bottom - cellH * 8, cellW * 8, cellH * 8),
+      Rect.fromLTWH(boardRect.left, boardRect.bottom - cellH * 6, cellW * 6, cellH * 6),
       Alignment.bottomLeft,
     );
     build(
       Rect.fromLTWH(
-        boardRect.right - cellW * 8,
-        boardRect.bottom - cellH * 8,
-        cellW * 8,
-        cellH * 8,
+        boardRect.right - cellW * 6,
+        boardRect.bottom - cellH * 6,
+        cellW * 6,
+        cellH * 6,
       ),
       Alignment.bottomRight,
     );
@@ -695,7 +730,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveFromCell!.x, moveFromCell!.y);
 
           final toCenter = moveToCell!.x == -2 // -2 flag represents Finished State
-              ? DaayakattaiBoardGeometry.cellCenter(boardRect, 9, 9)
+              ? DaayakattaiBoardGeometry.cellCenter(boardRect, 7, 7)
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveToCell!.x, moveToCell!.y);
 
           center = Offset.lerp(fromCenter, toCenter, moveProgress.clamp(0.0, 1.0))!;
@@ -1229,10 +1264,10 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
       if (piece.state == PieceState.home) {
         // Tapped inside the player's 2x2 home corner
         tapped = DaayakattaiBoardGeometry.isUnusedCorner(row, col) &&
-            ((player.teamId == 0 && row < 3 && col < 3) ||
-             (player.teamId == 1 && row < 3 && col >= 4) ||
-             (player.teamId == 2 && row >= 4 && col >= 4) ||
-             (player.teamId == 3 && row >= 4 && col < 3));
+            ((player.teamId == 0 && row >= 2 && row < 4 && col >= 2 && col < 4) ||
+             (player.teamId == 1 && row >= 2 && row < 4 && col >= 11 && col < 13) ||
+             (player.teamId == 2 && row >= 11 && row < 13 && col >= 11 && col < 13) ||
+             (player.teamId == 3 && row >= 11 && row < 13 && col >= 2 && col < 4));
       } else {
         final coord = piece.coordinate;
         tapped = (coord != null && coord.x == row && coord.y == col);

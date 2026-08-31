@@ -1,7 +1,7 @@
 import 'dart:math';
 
 // ---------------------------------------------------------------------------
-// Daayakattai 19x19 Pure Dart Game Engine
+// Daayakattai 15x15 Pure Dart Game Engine
 // ---------------------------------------------------------------------------
 
 enum GameMode {
@@ -33,199 +33,174 @@ class BoardCoordinate {
 }
 
 class Board {
-  static const int outerLength = 72;
+  static const int outerLength = 56;
 
   static const List<BoardCoordinate> outerTrack = [
-    // North left edge: (7,8) up to (0,8)
-    BoardCoordinate(7, 8),
-    BoardCoordinate(6, 8),
-    BoardCoordinate(5, 8),
-    BoardCoordinate(4, 8),
-    BoardCoordinate(3, 8),
-    BoardCoordinate(2, 8),
-    BoardCoordinate(1, 8),
+    // North left edge: (5,6) up to (0,6)
+    BoardCoordinate(5, 6),
+    BoardCoordinate(4, 6),
+    BoardCoordinate(3, 6),
+    BoardCoordinate(2, 6),
+    BoardCoordinate(1, 6),
+    BoardCoordinate(0, 6),
+    // North tip: (0,6) -> (0,7) -> (0,8)
+    BoardCoordinate(0, 7),
     BoardCoordinate(0, 8),
-    // North tip: (0,8) -> (0,9) -> (0,10)
-    BoardCoordinate(0, 9),
-    BoardCoordinate(0, 10),
-    // North right edge: (0,10) down to (7,10)
-    BoardCoordinate(1, 10),
-    BoardCoordinate(2, 10),
-    BoardCoordinate(3, 10),
-    BoardCoordinate(4, 10),
-    BoardCoordinate(5, 10),
+    // North right edge: (0,8) down to (5,8)
+    BoardCoordinate(1, 8),
+    BoardCoordinate(2, 8),
+    BoardCoordinate(3, 8),
+    BoardCoordinate(4, 8),
+    BoardCoordinate(5, 8),
+    // North gate
+    BoardCoordinate(5, 7),
+    // East top edge: (6,9) right to (6,14)
+    BoardCoordinate(6, 9),
     BoardCoordinate(6, 10),
-    BoardCoordinate(7, 10),
-    // East top edge: (8,11) right to (8,18)
-    BoardCoordinate(8, 11),
-    BoardCoordinate(8, 12),
-    BoardCoordinate(8, 13),
+    BoardCoordinate(6, 11),
+    BoardCoordinate(6, 12),
+    BoardCoordinate(6, 13),
+    BoardCoordinate(6, 14),
+    // East tip: (6,14) -> (7,14) -> (8,14)
+    BoardCoordinate(7, 14),
     BoardCoordinate(8, 14),
-    BoardCoordinate(8, 15),
-    BoardCoordinate(8, 16),
-    BoardCoordinate(8, 17),
-    BoardCoordinate(8, 18),
-    // East tip: (8,18) -> (9,18) -> (10,18)
-    BoardCoordinate(9, 18),
-    BoardCoordinate(10, 18),
-    // East bottom edge: (10,18) left to (10,11)
-    BoardCoordinate(10, 17),
-    BoardCoordinate(10, 16),
-    BoardCoordinate(10, 15),
-    BoardCoordinate(10, 14),
-    BoardCoordinate(10, 13),
-    BoardCoordinate(10, 12),
-    BoardCoordinate(10, 11),
-    // South right edge: (11,10) down to (18,10)
-    BoardCoordinate(11, 10),
-    BoardCoordinate(12, 10),
-    BoardCoordinate(13, 10),
-    BoardCoordinate(14, 10),
-    BoardCoordinate(15, 10),
-    BoardCoordinate(16, 10),
-    BoardCoordinate(17, 10),
-    BoardCoordinate(18, 10),
-    // South tip: (18,10) -> (18,9) -> (18,8)
-    BoardCoordinate(18, 9),
-    BoardCoordinate(18, 8),
-    // South left edge: (18,8) up to (11,8)
-    BoardCoordinate(17, 8),
-    BoardCoordinate(16, 8),
-    BoardCoordinate(15, 8),
-    BoardCoordinate(14, 8),
-    BoardCoordinate(13, 8),
-    BoardCoordinate(12, 8),
+    // East bottom edge: (8,14) left to (8,9)
+    BoardCoordinate(8, 13),
+    BoardCoordinate(8, 12),
+    BoardCoordinate(8, 11),
+    BoardCoordinate(8, 10),
+    BoardCoordinate(8, 9),
+    // East gate
+    BoardCoordinate(7, 9),
+    // South right edge: (9,8) down to (14,8)
+    BoardCoordinate(9, 8),
+    BoardCoordinate(10, 8),
     BoardCoordinate(11, 8),
-    // West bottom edge: (10,7) left to (10,0)
-    BoardCoordinate(10, 7),
+    BoardCoordinate(12, 8),
+    BoardCoordinate(13, 8),
+    BoardCoordinate(14, 8),
+    // South tip: (14,8) -> (14,7) -> (14,6)
+    BoardCoordinate(14, 7),
+    BoardCoordinate(14, 6),
+    // South left edge: (14,6) up to (9,6)
+    BoardCoordinate(13, 6),
+    BoardCoordinate(12, 6),
+    BoardCoordinate(11, 6),
     BoardCoordinate(10, 6),
-    BoardCoordinate(10, 5),
-    BoardCoordinate(10, 4),
-    BoardCoordinate(10, 3),
-    BoardCoordinate(10, 2),
-    BoardCoordinate(10, 1),
-    BoardCoordinate(10, 0),
-    // West tip: (10,0) -> (9,0) -> (8,0)
-    BoardCoordinate(9, 0),
-    BoardCoordinate(8, 0),
-    // West top edge: (8,0) right to (8,7)
-    BoardCoordinate(8, 1),
-    BoardCoordinate(8, 2),
-    BoardCoordinate(8, 3),
-    BoardCoordinate(8, 4),
+    BoardCoordinate(9, 6),
+    // South gate
+    BoardCoordinate(9, 7),
+    // West bottom edge: (8,5) left to (8,0)
     BoardCoordinate(8, 5),
-    BoardCoordinate(8, 6),
-    BoardCoordinate(8, 7),
+    BoardCoordinate(8, 4),
+    BoardCoordinate(8, 3),
+    BoardCoordinate(8, 2),
+    BoardCoordinate(8, 1),
+    BoardCoordinate(8, 0),
+    // West tip: (8,0) -> (7,0) -> (6,0)
+    BoardCoordinate(7, 0),
+    BoardCoordinate(6, 0),
+    // West top edge: (6,0) right to (6,5)
+    BoardCoordinate(6, 1),
+    BoardCoordinate(6, 2),
+    BoardCoordinate(6, 3),
+    BoardCoordinate(6, 4),
+    BoardCoordinate(6, 5),
+    // West gate
+    BoardCoordinate(7, 5),
   ];
 
   /// The 9 symmetric cross positions (Malai / safe cells).
   static final Set<BoardCoordinate> malaiCells = {
     // Arm tips
-    BoardCoordinate(0, 9), // North tip
-    BoardCoordinate(9, 18), // East tip
-    BoardCoordinate(18, 9), // South tip
-    BoardCoordinate(9, 0), // West tip
+    BoardCoordinate(0, 7),
+    BoardCoordinate(7, 14),
+    BoardCoordinate(14, 7),
+    BoardCoordinate(7, 0),
     // Starting gates
-    BoardCoordinate(7, 9), // North gate
-    BoardCoordinate(9, 11), // East gate
-    BoardCoordinate(11, 9), // South gate
-    BoardCoordinate(9, 7), // West gate
-    // Inner path cells (all cells from gate to center)
+    BoardCoordinate(5, 7),
+    BoardCoordinate(7, 9),
+    BoardCoordinate(9, 7),
+    BoardCoordinate(7, 5),
     // North inner path
-    BoardCoordinate(6, 9),
-    BoardCoordinate(5, 9),
-    BoardCoordinate(4, 9),
-    BoardCoordinate(3, 9),
-    BoardCoordinate(2, 9),
-    BoardCoordinate(1, 9),
+    BoardCoordinate(1, 7),
+    BoardCoordinate(2, 7),
+    BoardCoordinate(3, 7),
+    BoardCoordinate(4, 7),
+    BoardCoordinate(6, 7),
     // East inner path
-    BoardCoordinate(9, 17),
-    BoardCoordinate(9, 16),
-    BoardCoordinate(9, 15),
-    BoardCoordinate(9, 14),
-    BoardCoordinate(9, 13),
-    BoardCoordinate(9, 12),
+    BoardCoordinate(7, 13),
+    BoardCoordinate(7, 12),
+    BoardCoordinate(7, 11),
+    BoardCoordinate(7, 10),
+    BoardCoordinate(7, 8),
     // South inner path
-    BoardCoordinate(12, 9),
-    BoardCoordinate(13, 9),
-    BoardCoordinate(14, 9),
-    BoardCoordinate(15, 9),
-    BoardCoordinate(16, 9),
-    BoardCoordinate(17, 9),
+    BoardCoordinate(13, 7),
+    BoardCoordinate(12, 7),
+    BoardCoordinate(11, 7),
+    BoardCoordinate(10, 7),
+    BoardCoordinate(8, 7),
     // West inner path
-    BoardCoordinate(9, 1),
-    BoardCoordinate(9, 2),
-    BoardCoordinate(9, 3),
-    BoardCoordinate(9, 4),
-    BoardCoordinate(9, 5),
-    BoardCoordinate(9, 6),
+    BoardCoordinate(7, 1),
+    BoardCoordinate(7, 2),
+    BoardCoordinate(7, 3),
+    BoardCoordinate(7, 4),
+    BoardCoordinate(7, 6),
     // Center HOME
-    BoardCoordinate(8, 9),
-    BoardCoordinate(9, 9),
-    BoardCoordinate(10, 9),
-    BoardCoordinate(8, 10),
-    BoardCoordinate(9, 10),
-    BoardCoordinate(10, 10),
+    BoardCoordinate(6, 6),
+    BoardCoordinate(6, 8),
+    BoardCoordinate(7, 7),
+    BoardCoordinate(8, 6),
     BoardCoordinate(8, 8),
-    BoardCoordinate(9, 8),
-    BoardCoordinate(10, 8),
   };
 
   /// Inner Pazham track arm for each player index:
   /// 0 = top, 1 = right, 2 = bottom, 3 = left.
   static const List<List<BoardCoordinate>> innerPaths = [
-    // Top player: from (0,9) down to (8,9)
+    // Top player: from (0,7) down to (6,7)
     [
-      BoardCoordinate(0, 9),
-      BoardCoordinate(1, 9),
-      BoardCoordinate(2, 9),
-      BoardCoordinate(3, 9),
-      BoardCoordinate(4, 9),
-      BoardCoordinate(5, 9),
-      BoardCoordinate(6, 9),
+      BoardCoordinate(0, 7),
+      BoardCoordinate(1, 7),
+      BoardCoordinate(2, 7),
+      BoardCoordinate(3, 7),
+      BoardCoordinate(4, 7),
+      BoardCoordinate(5, 7),
+      BoardCoordinate(6, 7),
+    ],
+    // Right player: from (7,14) left to (7,8)
+    [
+      BoardCoordinate(7, 14),
+      BoardCoordinate(7, 13),
+      BoardCoordinate(7, 12),
+      BoardCoordinate(7, 11),
+      BoardCoordinate(7, 10),
       BoardCoordinate(7, 9),
-      BoardCoordinate(8, 9),
+      BoardCoordinate(7, 8),
     ],
-    // Right player: from (9,18) left to (9,10)
+    // Bottom player: from (14,7) up to (8,7)
     [
-      BoardCoordinate(9, 18),
-      BoardCoordinate(9, 17),
-      BoardCoordinate(9, 16),
-      BoardCoordinate(9, 15),
-      BoardCoordinate(9, 14),
-      BoardCoordinate(9, 13),
-      BoardCoordinate(9, 12),
-      BoardCoordinate(9, 11),
-      BoardCoordinate(9, 10),
-    ],
-    // Bottom player: from (18,9) up to (10,9)
-    [
-      BoardCoordinate(18, 9),
-      BoardCoordinate(17, 9),
-      BoardCoordinate(16, 9),
-      BoardCoordinate(15, 9),
-      BoardCoordinate(14, 9),
-      BoardCoordinate(13, 9),
-      BoardCoordinate(12, 9),
-      BoardCoordinate(11, 9),
-      BoardCoordinate(10, 9),
-    ],
-    // Left player: from (9,0) right to (9,8)
-    [
-      BoardCoordinate(9, 0),
-      BoardCoordinate(9, 1),
-      BoardCoordinate(9, 2),
-      BoardCoordinate(9, 3),
-      BoardCoordinate(9, 4),
-      BoardCoordinate(9, 5),
-      BoardCoordinate(9, 6),
+      BoardCoordinate(14, 7),
+      BoardCoordinate(13, 7),
+      BoardCoordinate(12, 7),
+      BoardCoordinate(11, 7),
+      BoardCoordinate(10, 7),
       BoardCoordinate(9, 7),
-      BoardCoordinate(9, 8),
+      BoardCoordinate(8, 7),
+    ],
+    // Left player: from (7,0) right to (7,6)
+    [
+      BoardCoordinate(7, 0),
+      BoardCoordinate(7, 1),
+      BoardCoordinate(7, 2),
+      BoardCoordinate(7, 3),
+      BoardCoordinate(7, 4),
+      BoardCoordinate(7, 5),
+      BoardCoordinate(7, 6),
     ],
   ];
 
   /// The four outer-track entrance points.
-  static const List<int> startOuterIndices = [7, 23, 39, 55];
+  static const List<int> startOuterIndices = [13, 27, 41, 55];
 
   static bool isMalai(BoardCoordinate coordinate) {
     return malaiCells.contains(coordinate);
@@ -552,14 +527,14 @@ class DaayakattaiGame {
   Player get currentPlayer => _players[_currentPlayerIndex];
   bool get isGameOver => _winningTeamId != null;
   int? get winningTeamId => _winningTeamId;
-  
+
   // Rolling phase controls
   bool get needsRoll => _rollingPhase && !isGameOver;
   bool get hasPendingRolls => _pendingRolls.isNotEmpty;
   DiceRoll? get currentRoll => _pendingRolls.isEmpty ? null : _pendingRolls.first;
   List<DiceRoll> get pendingRolls => List.unmodifiable(_pendingRolls);
   int get consecutiveBonusCount => _consecutiveBonusCount;
-  
+
   // Debug helper method for unit testing to override private state of pieces
   void debugSetupPiece(int playerId, int pieceId, PieceState state, {int outerSteps = 0, int innerIndex = 0}) {
     final player = _players[playerId];
@@ -568,7 +543,7 @@ class DaayakattaiGame {
     piece._outerSteps = outerSteps;
     piece._innerIndex = innerIndex;
   }
-  
+
   // Debug helper method for setting up game states in prebuilt testing scenarios
   void debugSetupGameState({
     int? currentPlayerIndex,
@@ -588,8 +563,6 @@ class DaayakattaiGame {
     if (customRolls != null) {
       _pendingRolls.clear();
       for (final val in customRolls) {
-        // Map a target value to a valid die1/die2 combination
-        // die1=0 (blank), die2=0..3 represent the four sides; value drives which combo
         switch (val) {
           case 1: _pendingRolls.add(DiceRoll(0, 1)); break;
           case 2: _pendingRolls.add(DiceRoll(1, 1)); break;
@@ -598,7 +571,7 @@ class DaayakattaiGame {
           case 5: _pendingRolls.add(DiceRoll(2, 3)); break;
           case 6: _pendingRolls.add(DiceRoll(3, 3)); break;
           case 12: _pendingRolls.add(DiceRoll(0, 0)); break;
-          default: _pendingRolls.add(DiceRoll(1, 1)); // default = 2
+          default: _pendingRolls.add(DiceRoll(1, 1));
         }
       }
     }
@@ -616,7 +589,6 @@ class DaayakattaiGame {
       case 12: _pendingRolls.add(DiceRoll(0, 0)); break;
       default: _pendingRolls.add(DiceRoll(1, 1));
     }
-    // Disable rolling phase so the queued rolls are consumed on move
     _rollingPhase = false;
   }
 
@@ -629,7 +601,7 @@ class DaayakattaiGame {
   void debugSetNeedsRoll(bool value) {
     _rollingPhase = value;
   }
-  
+
   // Public check for landing rules, exposed for UI highlights and test suites
   bool canLandOn(BoardCoordinate coord, Player mover) {
     return _canLandOn(coord, mover);
@@ -644,11 +616,10 @@ class DaayakattaiGame {
     if (!needsRoll) throw StateError('Rolling phase is over. Please make moves.');
 
     final roll = _dice.roll();
-    
+
     if (roll.grantsExtra) {
       _consecutiveBonusCount++;
       if (_consecutiveBonusCount == 3) {
-        // 3 consecutive bonus rolls = cancellation & forfeit turn
         _pendingRolls.clear();
         _consecutiveBonusCount = 0;
         _rollingPhase = false;
@@ -656,13 +627,13 @@ class DaayakattaiGame {
         return roll;
       }
       _pendingRolls.add(roll);
-      _rollingPhase = true; // can roll again
+      _rollingPhase = true;
     } else {
       _pendingRolls.add(roll);
       _consecutiveBonusCount = 0;
-      _rollingPhase = false; // rolling phase ends
+      _rollingPhase = false;
     }
-    
+
     return roll;
   }
 
@@ -723,7 +694,7 @@ class DaayakattaiGame {
             rollValue <= player.innerPath.length) {
           final targetInner = rollValue - 1;
           final targetCoord = player.innerPath[targetInner];
-          
+
           if (_canLandOn(targetCoord, player)) {
             if (targetInner == player.innerPath.length - 1) {
               moves.add(Move(
@@ -804,10 +775,7 @@ class DaayakattaiGame {
       }
     }
 
-    // Teammates cannot land on each other on unsafe cells
     if (teammatePiecesCount > 0) return false;
-
-    // Pairs rule: a single piece cannot capture a double piece (pair)
     if (opponentPiecesCount >= 2) return false;
 
     return true;
