@@ -8,6 +8,16 @@ import 'services/daayakattai_share_service.dart';
 
 const int _gridSize = 19;
 
+const Color _kCellIvory = Color(0xFFF0E3C4);
+const Color _kAccentRed = Color(0xFFB5472D);
+const Color _kAccentGreen = Color(0xFF3E7C4F);
+const Color _kAccentBlue = Color(0xFF3B6FA0);
+const Color _kAccentOrange = Color(0xFFC56A2D);
+const Color _kSafeRed = Color(0xFFA93226);
+const Color _kSafeGreen = Color(0xFF1E8449);
+const Color _kSafeBlue = Color(0xFF2471A3);
+const Color _kSafeOrange = Color(0xFFD35400);
+
 enum DaayakattaiTeam { red, blue, green, yellow }
 
 extension DaayakattaiTeamX on DaayakattaiTeam {
@@ -72,7 +82,8 @@ class DaayakattaiBoardGeometry {
   }
 
   static Rect boardRect(Size size) {
-    final double side = math.min(size.width, size.height) - 14;
+    final double side = math.min(size.width, size.height) - 6.0;
+    if (side <= 0) return Rect.zero;
     return Rect.fromCenter(
       center: Offset(size.width / 2, size.height / 2),
       width: side,
@@ -164,9 +175,9 @@ class DaayakattaiBoardPainter extends CustomPainter {
     final Rect boardRect = DaayakattaiBoardGeometry.boardRect(size);
 
     _drawRawSilkBackground(canvas, size);
-    _drawBrassOuterFrame(canvas, boardRect);
     _drawGridCells(canvas, boardRect);
     _drawPieces(canvas, boardRect);
+    _drawBrassOuterFrame(canvas, boardRect);
   }
 
   @override
@@ -174,70 +185,43 @@ class DaayakattaiBoardPainter extends CustomPainter {
 
   void _drawRawSilkBackground(Canvas canvas, Size size) {
     final Rect rect = Offset.zero & size;
-    
-    // Base wood color
-    final Paint woodBase = Paint()..color = const Color(0xFF8B5A2B);
-    canvas.drawRect(rect, woodBase);
 
-    // Wood grain lines - horizontal and diagonal subtle lines
-    final Paint grainPaint = Paint()
-      ..color = const Color(0xFF704214).withValues(alpha: 0.3)
-      ..strokeWidth = 1.0;
-    
-    final math.Random random = math.Random(42);
-    for (int i = 0; i < 60; i++) {
-      final double y = random.nextDouble() * size.height;
-      final double xStart = random.nextDouble() * size.width;
-      final double xEnd = xStart + random.nextDouble() * 100 - 50;
-      final double yEnd = y + random.nextDouble() * 20 - 10;
-      canvas.drawLine(Offset(xStart, y), Offset(xEnd, yEnd), grainPaint);
-    }
-
-    // Additional darker grain lines
-    final Paint darkGrain = Paint()
-      ..color = const Color(0xFF5C3317).withValues(alpha: 0.2)
-      ..strokeWidth = 0.8;
-    for (int i = 0; i < 40; i++) {
-      final double y = random.nextDouble() * size.height;
-      final double xStart = random.nextDouble() * size.width;
-      final double xEnd = xStart + random.nextDouble() * 80 - 40;
-      final double yEnd = y + random.nextDouble() * 15 - 7.5;
-      canvas.drawLine(Offset(xStart, y), Offset(xEnd, yEnd), darkGrain);
-    }
-
-    // Raised wooden frame
-    final Paint framePaint = Paint()
+    final Paint woodPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [
-          Color(0xFF5C3317),
-          Color(0xFF3E1F0D),
-          Color(0xFF2A1508),
-        ],
+        colors: [Color(0xFF6E4324), Color(0xFF3E2212), Color(0xFF241006)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(rect);
-    canvas.drawRect(rect, framePaint);
+    canvas.drawRect(rect, woodPaint);
 
-    // Inner frame border
-    final Paint innerFrame = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0
-      ..color = const Color(0xFFD9A843);
-    canvas.drawRect(rect.deflate(8), innerFrame);
+    // Fine dark horizontal grain lines.
+    final Paint grainPaint = Paint()
+      ..color = const Color(0xFF1A0A03).withValues(alpha: 0.22)
+      ..strokeWidth = 1.0;
 
-    // Antique brass corner brackets
-    _drawBrassCornerBracket(canvas, rect.topLeft, Alignment.topLeft);
-    _drawBrassCornerBracket(canvas, rect.topRight, Alignment.topRight);
-    _drawBrassCornerBracket(canvas, rect.bottomLeft, Alignment.bottomLeft);
-    _drawBrassCornerBracket(canvas, rect.bottomRight, Alignment.bottomRight);
+    final math.Random random = math.Random(19);
+    for (int i = 0; i < 90; i++) {
+      final double y = random.nextDouble() * size.height;
+      final double amplitude = 1.0 + random.nextDouble() * 3.0;
+      final Path path = Path()..moveTo(0, y);
+      final int steps = 32;
+      final double stepW = size.width / steps;
+      for (int s = 1; s <= steps; s++) {
+        final double x = s * stepW;
+        final double wave = math.sin(s * 0.55 + i * 1.3) * amplitude;
+        path.lineTo(x, y + wave);
+      }
+      canvas.drawPath(path, grainPaint);
+    }
 
-    // Gold leaf/floral motifs in bottom corners
-    _drawGoldMotif(canvas, rect.bottomLeft + Offset(30, -30), 20);
-    _drawGoldMotif(canvas, rect.bottomRight + Offset(-30, -30), 20);
-
-    // Engraved Tamil labels
-    _drawEngravedText(canvas, 'தாயம்', rect.topLeft + Offset(30, 30));
-    _drawEngravedText(canvas, 'விளையாட்டு', rect.topRight + Offset(-30, 30), alignRight: true);
+    // Soft vignette.
+    final Paint vignettePaint = Paint()
+      ..shader = RadialGradient(
+        colors: [const Color(0x00000000), const Color(0x55000000)],
+        center: Alignment.center,
+        radius: 1.3,
+      ).createShader(rect);
+    canvas.drawRect(rect, vignettePaint);
   }
 
   void _drawBrassCornerBracket(Canvas canvas, Offset corner, Alignment alignment) {
@@ -245,10 +229,10 @@ class DaayakattaiBoardPainter extends CustomPainter {
       ..color = const Color(0xFFD9A843)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
-    
+
     final double size = 30;
     final Path bracketPath = Path();
-    
+
     if (alignment == Alignment.topLeft) {
       bracketPath.moveTo(corner.dx + size, corner.dy);
       bracketPath.lineTo(corner.dx, corner.dy);
@@ -278,73 +262,34 @@ class DaayakattaiBoardPainter extends CustomPainter {
       bracketPath.lineTo(corner.dx, corner.dy);
       bracketPath.lineTo(corner.dx, corner.dy - size * 0.7);
     }
-    
+
     canvas.drawPath(bracketPath, brassPaint);
   }
 
-  void _drawGoldMotif(Canvas canvas, Offset center, double size) {
-    final Paint goldPaint = Paint()
-      ..color = const Color(0xFFD9A843)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    
-    // Simple leaf pattern
-    for (int i = 0; i < 4; i++) {
-      final double angle = i * math.pi / 2;
-      final Offset leafEnd = center + Offset(math.cos(angle) * size, math.sin(angle) * size);
-      final Offset leafControl = center + Offset(math.cos(angle + 0.3) * size * 0.5, math.sin(angle + 0.3) * size * 0.5);
-      
-      final Path leafPath = Path()
-        ..moveTo(center.dx, center.dy)
-        ..quadraticBezierTo(leafControl.dx, leafControl.dy, leafEnd.dx, leafEnd.dy);
-      
-      canvas.drawPath(leafPath, goldPaint);
-    }
-    
-    // Center dot
-    canvas.drawCircle(center, 2, goldPaint);
-  }
-
-  void _drawEngravedText(Canvas canvas, String text, Offset position, {bool alignRight = false}) {
-    // Shadow/engraving effect
-    const shadowStyle = TextStyle(
-      color: Color(0xFF2A1508),
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    );
-    
-    const lightStyle = TextStyle(
-      color: Color(0xFFD9A843),
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    );
-    
-    final TextPainter shadowPainter = TextPainter(
-      text: TextSpan(text: text, style: shadowStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    
-    final TextPainter lightPainter = TextPainter(
-      text: TextSpan(text: text, style: lightStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    
-    if (alignRight) {
-      shadowPainter.paint(canvas, position - Offset(shadowPainter.width, 0) + const Offset(1, 1));
-      lightPainter.paint(canvas, position - Offset(lightPainter.width, 0));
-    } else {
-      shadowPainter.paint(canvas, position + const Offset(1, 1));
-      lightPainter.paint(canvas, position);
-    }
-  }
-
   void _drawBrassOuterFrame(Canvas canvas, Rect boardRect) {
-    // Keep a subtle gold framing around the active cross
-    final Paint framePaint = Paint()
+    final RRect rrect = RRect.fromRectAndRadius(boardRect, const Radius.circular(10));
+
+    final Paint shadowPaint = Paint()
+      ..color = const Color(0x66000000)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 6);
+    canvas.drawRRect(rrect.shift(const Offset(2, 3)), shadowPaint);
+
+    final Paint goldPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
+      ..strokeWidth = 4.0
       ..color = const Color(0xFFD9A843);
-    canvas.drawRect(boardRect, framePaint);
+    canvas.drawRRect(rrect, goldPaint);
+
+    final Paint darkPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0xFF2A1508);
+    canvas.drawRRect(rrect.deflate(3.0), darkPaint);
+
+    _drawBrassCornerBracket(canvas, boardRect.topLeft, Alignment.topLeft);
+    _drawBrassCornerBracket(canvas, boardRect.topRight, Alignment.topRight);
+    _drawBrassCornerBracket(canvas, boardRect.bottomLeft, Alignment.bottomLeft);
+    _drawBrassCornerBracket(canvas, boardRect.bottomRight, Alignment.bottomRight);
   }
 
   void _drawWoodenEmblem(Canvas canvas, Offset center, double size) {
@@ -357,67 +302,41 @@ class DaayakattaiBoardPainter extends CustomPainter {
         ],
         stops: [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: size));
-    
+
     canvas.drawCircle(center, size, emblemPaint);
-    
-    // Add decorative ring
+
     final Paint ringPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
       ..color = const Color(0xFFD9A843);
     canvas.drawCircle(center, size * 0.7, ringPaint);
-    
-    // Add small dot in center
-    canvas.drawCircle(center, size * 0.2, Paint()..color = const Color(0xFFD9A843));
-  }
 
-  void _drawWoodenBellMarker(Canvas canvas, Offset center, double r, Color ringColor) {
-    // Left empty or fallback marker drawing
+    canvas.drawCircle(center, size * 0.2, Paint()..color = const Color(0xFFD9A843));
   }
 
   void _drawGridCells(Canvas canvas, Rect boardRect) {
     final double cellW = boardRect.width / _gridSize;
     final double cellH = boardRect.height / _gridSize;
 
-    // Draw central HOME diagonal dividing lines (rows 8,9,10 & cols 8,9,10)
+    _drawCornerPlatforms(canvas, boardRect, cellW, cellH);
+
+    // Center HOME square.
     final Rect centerRect = Rect.fromLTWH(
       boardRect.left + 8 * cellW,
       boardRect.top + 8 * cellH,
       cellW * 3,
       cellH * 3,
     );
-
-    // Paint center background
-    final Paint centerPaint = Paint()..color = const Color(0xFFF5E8C7);
-    canvas.drawRect(centerRect, centerPaint);
-
-    // Draw diagonal dividers on the center square
-    final Paint diagonalPaint = Paint()
-      ..color = const Color(0xFF3F0E0E)
-      ..strokeWidth = 1.8;
-    canvas.drawLine(centerRect.topLeft, centerRect.bottomRight, diagonalPaint);
-    canvas.drawLine(centerRect.topRight, centerRect.bottomLeft, diagonalPaint);
-
-    // Write "HOME" label in the triangles
-    const homeLabelStyle = TextStyle(
-      color: Color(0xFF3F0E0E),
-      fontSize: 10,
-      fontWeight: FontWeight.bold,
-    );
-    final TextPainter homePainter = TextPainter(
-      text: const TextSpan(text: 'HOME', style: homeLabelStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    homePainter.paint(canvas, centerRect.center - Offset(homePainter.width / 2, homePainter.height / 2));
+    _drawHomeCenter(canvas, centerRect, cellW, cellH);
 
     for (int row = 0; row < _gridSize; row++) {
       for (int col = 0; col < _gridSize; col++) {
-        // Skip corner spaces
+        // Skip corner spaces; they are now raised platforms.
         if (DaayakattaiBoardGeometry.isUnusedCorner(row, col)) {
           continue;
         }
 
-        // Central HOME area is drawn above, skip cells here to keep the blank triangles visible
+        // Central HOME area is drawn above, so skip center cells.
         if (row >= 8 && row <= 10 && col >= 8 && col <= 10) {
           continue;
         }
@@ -430,55 +349,15 @@ class DaayakattaiBoardPainter extends CustomPainter {
         );
         final Rect fillRect = cellRect.deflate(1.4);
 
-        // Safe (Malai) cell coloring matching reference image
-        Color cellColor = const Color(0xFFF6ECD4); // Default ivory cell
-        bool isSafe = false;
-
-        // Visual coloring for gates, tips, and paths to match the original team accents
-        if ((row == 9 && col == 0) || (row == 9 && col == 7) || (row == 9 && col >= 1 && col <= 6)) {
-          // West: Purple accents
-          if (row == 9 && col == 0) {
-            cellColor = const Color(0xFF9575CD); // West tip
-            isSafe = true;
-          } else if (row == 9 && col == 7) {
-            cellColor = const Color(0xFFB39DDB); // West gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFEDE7F6); // West inner path
-          }
-        } else if ((row == 9 && col == 18) || (row == 9 && col == 11) || (row == 9 && col >= 12 && col <= 17)) {
-          // East: Green accents
-          if (row == 9 && col == 18) {
-            cellColor = const Color(0xFF81C784); // East tip
-            isSafe = true;
-          } else if (row == 9 && col == 11) {
-            cellColor = const Color(0xFFA5D6A7); // East gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFE8F5E9); // East inner path
-          }
-        } else if ((row == 0 && col == 9) || (row == 7 && col == 9) || (col == 9 && row >= 1 && row <= 6)) {
-          // North: Red accents
-          if (row == 0 && col == 9) {
-            cellColor = const Color(0xFFE57373); // North tip
-            isSafe = true;
-          } else if (row == 7 && col == 9) {
-            cellColor = const Color(0xFFEF9A9A); // North gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFFFEBEE); // North inner path
-          }
-        } else if ((row == 18 && col == 9) || (row == 11 && col == 9) || (col == 9 && row >= 12 && row <= 17)) {
-          // South: Yellow/Red accents
-          if (row == 18 && col == 9) {
-            cellColor = const Color(0xFFE57373); // South tip
-            isSafe = true;
-          } else if (row == 11 && col == 9) {
-            cellColor = const Color(0xFFEF9A9A); // South gate
-            isSafe = true;
-          } else {
-            cellColor = const Color(0xFFFFEBEE); // South inner path
-          }
+        Color cellColor = _kCellIvory;
+        if (row == 9 && col <= 7) {
+          cellColor = const Color(0xFFE1E9F2);
+        } else if (row == 9 && col >= 11) {
+          cellColor = const Color(0xFFDDE9DB);
+        } else if (col == 9 && row <= 7) {
+          cellColor = const Color(0xFFF3DEDA);
+        } else if (col == 9 && row >= 11) {
+          cellColor = const Color(0xFFF3E2CF);
         }
 
         final Paint fillPaint = Paint()..color = cellColor;
@@ -487,7 +366,6 @@ class DaayakattaiBoardPainter extends CustomPainter {
           fillPaint,
         );
 
-        // Cell borders
         final Paint borderPaint = Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2
@@ -498,63 +376,296 @@ class DaayakattaiBoardPainter extends CustomPainter {
           borderPaint,
         );
 
-        // Draw 'X' inside safe cells
-        if (isSafe) {
-          canvas.drawLine(fillRect.topLeft, fillRect.bottomRight, borderPaint);
-          canvas.drawLine(fillRect.topRight, fillRect.bottomLeft, borderPaint);
+        final Color? xColor = _safeXColor(row, col);
+        if (xColor != null) {
+          _drawSafeX(canvas, fillRect, xColor);
         }
       }
     }
-    // Draw lotuses on all safe squares
-    for (int row = 0; row < _gridSize; row++) {
-      for (int col = 0; col < _gridSize; col++) {
-        if (!DaayakattaiBoardGeometry.isUnusedCorner(row, col) &&
-            DaayakattaiBoardGeometry.isSafeCrossCell(row, col)) {
-          final Offset center =
-              DaayakattaiBoardGeometry.cellCenter(boardRect, row, col);
-          _drawLotus(canvas, center, cellW * 0.22);
-        }
-      }
+
+    _drawDiceSticks(canvas, boardRect, cellW, cellH);
+  }
+
+  Color? _safeXColor(int row, int col) {
+    if (row == 9 && col <= 7) return _kSafeBlue;
+    if (row == 9 && col >= 11) return _kSafeGreen;
+    if (col == 9 && row <= 7) return _kSafeRed;
+    if (col == 9 && row >= 11) return _kSafeOrange;
+    return null;
+  }
+
+  void _drawSafeX(Canvas canvas, Rect rect, Color color) {
+    final double strokeWidth = math.max(2.0, rect.width * 0.13);
+    final Paint shadowPaint = Paint()
+      ..color = const Color(0x22000000)
+      ..strokeWidth = strokeWidth + 1.2
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(
+      rect.topLeft + const Offset(0.8, 0.8),
+      rect.bottomRight + const Offset(0.8, 0.8),
+      shadowPaint,
+    );
+    canvas.drawLine(
+      rect.topRight + const Offset(-0.8, 0.8),
+      rect.bottomLeft + const Offset(-0.8, 0.8),
+      shadowPaint,
+    );
+
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(rect.topLeft, rect.bottomRight, paint);
+    canvas.drawLine(rect.topRight, rect.bottomLeft, paint);
+  }
+
+  void _drawCornerPlatforms(Canvas canvas, Rect boardRect, double cellW, double cellH) {
+    void build(Rect cornerRect, Alignment corner) {
+      final Rect rect = cornerRect.deflate(1.5);
+      final RRect rrect = RRect.fromRectAndCorners(
+        rect,
+        topLeft: corner == Alignment.topLeft ? const Radius.circular(14) : Radius.zero,
+        topRight: corner == Alignment.topRight ? const Radius.circular(14) : Radius.zero,
+        bottomLeft: corner == Alignment.bottomLeft ? const Radius.circular(14) : Radius.zero,
+        bottomRight: corner == Alignment.bottomRight ? const Radius.circular(14) : Radius.zero,
+      );
+
+      final Paint platformPaint = Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFF6D4A2B), Color(0xFF3E2212), Color(0xFF241006)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(rect);
+      canvas.drawRRect(rrect, platformPaint);
+
+      final Paint darkPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..color = const Color(0xFF1F0C04);
+      canvas.drawRRect(rrect, darkPaint);
+
+      final Paint goldPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..color = const Color(0xFFD9A843);
+      canvas.drawRRect(rrect.deflate(4.5), goldPaint);
+
+      _drawCornerPockets(canvas, boardRect, cellW, cellH, corner);
+    }
+
+    build(
+      Rect.fromLTWH(boardRect.left, boardRect.top, cellW * 8, cellH * 8),
+      Alignment.topLeft,
+    );
+    build(
+      Rect.fromLTWH(boardRect.right - cellW * 8, boardRect.top, cellW * 8, cellH * 8),
+      Alignment.topRight,
+    );
+    build(
+      Rect.fromLTWH(boardRect.left, boardRect.bottom - cellH * 8, cellW * 8, cellH * 8),
+      Alignment.bottomLeft,
+    );
+    build(
+      Rect.fromLTWH(
+        boardRect.right - cellW * 8,
+        boardRect.bottom - cellH * 8,
+        cellW * 8,
+        cellH * 8,
+      ),
+      Alignment.bottomRight,
+    );
+  }
+
+  void _drawCornerPockets(
+    Canvas canvas,
+    Rect boardRect,
+    double cellW,
+    double cellH,
+    Alignment corner,
+  ) {
+    int teamId;
+    if (corner == Alignment.topLeft) {
+      teamId = 0;
+    } else if (corner == Alignment.topRight) {
+      teamId = 1;
+    } else if (corner == Alignment.bottomRight) {
+      teamId = 2;
+    } else {
+      teamId = 3;
+    }
+
+    final double radius = math.min(cellW, cellH) * 0.30;
+    for (int i = 0; i < 4; i++) {
+      final Offset center = DaayakattaiBoardGeometry.homePieceOffset(boardRect, teamId, i);
+      _drawRecessedPocket(canvas, center, radius);
     }
   }
 
-  void _drawLotus(Canvas canvas, Offset center, double size) {
-    final Paint petalPaint = Paint()..color = const Color(0xFF8E3B2F);
-    final Paint centerPaint = Paint()..color = const Color(0xFFC47A2E);
-    final Paint dotPaint = Paint()..color = const Color(0xFFB1822A);
+  void _drawRecessedPocket(Canvas canvas, Offset center, double radius) {
+    final Paint shadowPaint = Paint()..color = const Color(0x44000000);
+    canvas.drawCircle(center + const Offset(1.2, 1.6), radius, shadowPaint);
 
+    final Paint basePaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [Color(0xFF2A1508), Color(0xFF4A2A12), Color(0xFF5C3317)],
+        stops: [0.0, 0.5, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawCircle(center, radius, basePaint);
+
+    final Paint rimPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = const Color(0xFF1F0C04);
+    canvas.drawCircle(center, radius, rimPaint);
+
+    final Paint innerPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..color = const Color(0xFF8B5A2B).withValues(alpha: 0.5);
+    canvas.drawCircle(center, radius - 1.5, innerPaint);
+  }
+
+  void _drawHomeCenter(Canvas canvas, Rect rect, double cellW, double cellH) {
+    final Offset center = rect.center;
+
+    final Path top = Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.right, rect.top)
+      ..lineTo(center.dx, center.dy)
+      ..close();
+    final Path right = Path()
+      ..moveTo(rect.right, rect.top)
+      ..lineTo(rect.right, rect.bottom)
+      ..lineTo(center.dx, center.dy)
+      ..close();
+    final Path bottom = Path()
+      ..moveTo(rect.left, rect.bottom)
+      ..lineTo(rect.right, rect.bottom)
+      ..lineTo(center.dx, center.dy)
+      ..close();
+    final Path left = Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.left, rect.bottom)
+      ..lineTo(center.dx, center.dy)
+      ..close();
+
+    final Paint paintA = Paint()..color = const Color(0xFFEAD9B2);
+    final Paint paintB = Paint()..color = const Color(0xFFF4E7C8);
+
+    canvas.drawPath(top, paintA);
+    canvas.drawPath(right, paintB);
+    canvas.drawPath(bottom, paintA);
+    canvas.drawPath(left, paintB);
+
+    final Paint linePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..color = const Color(0xFF3F0E0E);
+
+    canvas.drawLine(rect.topLeft, rect.bottomRight, linePaint);
+    canvas.drawLine(rect.topRight, rect.bottomLeft, linePaint);
+    canvas.drawRect(rect, linePaint);
+
+    _drawWoodenEmblem(canvas, center, math.min(cellW, cellH) * 0.62);
+  }
+
+  void _drawDiceSticks(Canvas canvas, Rect boardRect, double cellW, double cellH) {
+    final Offset center = boardRect.center;
+    final double length = cellW * 3.9;
+    final double thickness = cellW * 0.62;
+
+    _drawDiceStick(
+      canvas,
+      center.translate(-cellW * 0.35, cellH * 0.2),
+      length,
+      thickness,
+      -0.38,
+      3,
+    );
+    _drawDiceStick(
+      canvas,
+      center.translate(cellW * 0.35, -cellH * 0.2),
+      length,
+      thickness,
+      0.30,
+      2,
+    );
+  }
+
+  void _drawDiceStick(
+    Canvas canvas,
+    Offset center,
+    double length,
+    double thickness,
+    double angle,
+    int pipCount,
+  ) {
     canvas.save();
     canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
 
-    for (int i = 0; i < 5; i++) {
-      final Path petal = Path()
-        ..moveTo(0, 0)
-        ..cubicTo(
-          -size * 0.55,
-          -size * 0.3,
-          -size * 0.45 + (i.isEven ? 0.05 * size : 0),
-          -size * 1.05,
-          0,
-          -size * 1.35,
-        )
-        ..cubicTo(
-          size * 0.45 + (i.isOdd ? 0.05 * size : 0),
-          -size * 1.05,
-          size * 0.55,
-          -size * 0.3,
-          0,
-          0,
-        );
+    final Rect stickRect = Rect.fromCenter(
+      center: Offset.zero,
+      width: length,
+      height: thickness,
+    );
+    final RRect rrect = RRect.fromRectAndRadius(
+      stickRect,
+      Radius.circular(thickness * 0.4),
+    );
 
-      canvas.save();
-      canvas.rotate(i * 2 * math.pi / 5);
-      canvas.drawPath(petal, petalPaint);
-      canvas.restore();
+    final Paint shadowPaint = Paint()
+      ..color = const Color(0x66000000)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 2.5);
+    canvas.drawRRect(rrect.shift(const Offset(1.5, 2.0)), shadowPaint);
+
+    final Paint woodPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFC89B63), Color(0xFF8B5A2B), Color(0xFF4A2A12)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(stickRect);
+    canvas.drawRRect(rrect, woodPaint);
+
+    final Paint bevelPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0xFFD9A843).withValues(alpha: 0.45);
+    canvas.drawRRect(rrect.deflate(1.0), bevelPaint);
+
+    final Paint edgePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0xFF2A1508);
+    canvas.drawRRect(rrect, edgePaint);
+
+    final double pipRadius = thickness * 0.13;
+    final double span = length * 0.66;
+    for (int i = 0; i < pipCount; i++) {
+      final double t = pipCount == 1 ? 0.0 : -0.5 + (i / (pipCount - 1));
+      _drawPip(canvas, Offset(span * t, 0), pipRadius);
     }
 
-    canvas.drawCircle(Offset.zero, size * 0.42, centerPaint);
-    canvas.drawCircle(Offset.zero, size * 0.14, dotPaint);
     canvas.restore();
+  }
+
+  void _drawPip(Canvas canvas, Offset center, double radius) {
+    final Paint shadowPaint = Paint()..color = const Color(0x66000000);
+    canvas.drawCircle(center + const Offset(0, 0.8), radius, shadowPaint);
+
+    final Paint darkPaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [Color(0xFF1F0C04), Color(0xFF4A2A12)],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawCircle(center, radius, darkPaint);
+
+    final Paint rimPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..color = const Color(0xFF2A1508);
+    canvas.drawCircle(center, radius, rimPaint);
   }
 
   void _drawPieces(Canvas canvas, Rect boardRect) {
@@ -567,7 +678,7 @@ class DaayakattaiBoardPainter extends CustomPainter {
     for (final player in game.players) {
       for (final piece in player.pieces) {
         final key = '${player.id}-${piece.id}';
-        
+
         Offset center;
         if (piece.state == PieceState.home) {
           center = DaayakattaiBoardGeometry.homePieceOffset(boardRect, player.id, piece.id);
@@ -582,11 +693,11 @@ class DaayakattaiBoardPainter extends CustomPainter {
           final fromCenter = moveFromCell!.x == -1 // -1 flag represents Home State
               ? DaayakattaiBoardGeometry.homePieceOffset(boardRect, player.id, piece.id)
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveFromCell!.x, moveFromCell!.y);
-              
+
           final toCenter = moveToCell!.x == -2 // -2 flag represents Finished State
               ? DaayakattaiBoardGeometry.cellCenter(boardRect, 9, 9)
               : DaayakattaiBoardGeometry.cellCenter(boardRect, moveToCell!.x, moveToCell!.y);
-              
+
           center = Offset.lerp(fromCenter, toCenter, moveProgress.clamp(0.0, 1.0))!;
         }
 
@@ -678,14 +789,24 @@ class DaayakattaiBoardPainter extends CustomPainter {
 
     canvas.drawCircle(center, r, marblePaint);
 
-    // Add glossy highlight
+    // Glossy broad highlight
     final Paint highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.6)
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 2);
+      ..color = Colors.white.withValues(alpha: 0.45)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3);
     canvas.drawCircle(
       center + Offset(-r * 0.3, -r * 0.3),
-      r * 0.25,
+      r * 0.4,
       highlightPaint,
+    );
+
+    // Small bright specular highlight
+    final Paint specularPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.9)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 1);
+    canvas.drawCircle(
+      center + Offset(-r * 0.22, -r * 0.28),
+      r * 0.14,
+      specularPaint,
     );
 
     // Add subtle rim
@@ -804,133 +925,133 @@ class _DaayakattaiBoardState extends State<DaayakattaiBoard>
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  return Column(
-    children: [
-      Container(
-        color: const Color(0xFF2B0A0A),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: [
-            const Text(
-              '🎲 Daayakattai',
-              style: TextStyle(
-                color: Color(0xFFD9A843),
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.bug_report, color: Color(0xFFD9A843)),
-              onPressed: _showScenarioTester,
-            ),
-            IconButton(icon: const Icon(Icons.share, color: Color(0xFFD9A843)), onPressed: () => DaayakattaiShareService.shareGameInvite(channelName: DaayakattaiShareService.generateChannelName(), gameMode: _modeLabel(_currentMode), hostName: 'Host', language: _selectedLanguage == Language.tamil ? 'tamil' : 'english')),
-            const SizedBox(width: 4),
-            // Language toggle: TML ↔ ENG
-            GestureDetector(
-              onTap: () async {
-                final next = _selectedLanguage == Language.tamil
-                    ? Language.english
-                    : Language.tamil;
-                await DaayakattaiAudioService.setLanguage(next);
-                await DaayakattaiStorageService.saveLanguage(
-                    next == Language.tamil ? 'tamil' : 'english');
-                if (mounted) setState(() => _selectedLanguage = next);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFD9A843)),
-                  borderRadius: BorderRadius.circular(6),
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          color: const Color(0xFF2B0A0A),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              const Text(
+                '🎲 Daayakattai',
+                style: TextStyle(
+                  color: Color(0xFFD9A843),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
                 ),
-                child: Text(
-                  _selectedLanguage == Language.tamil ? 'TML' : 'ENG',
-                  style: const TextStyle(
-                    color: Color(0xFFD9A843),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.bug_report, color: Color(0xFFD9A843)),
+                onPressed: _showScenarioTester,
+              ),
+              IconButton(icon: const Icon(Icons.share, color: Color(0xFFD9A843)), onPressed: () => DaayakattaiShareService.shareGameInvite(channelName: DaayakattaiShareService.generateChannelName(), gameMode: _modeLabel(_currentMode), hostName: 'Host', language: _selectedLanguage == Language.tamil ? 'tamil' : 'english')),
+              const SizedBox(width: 4),
+              // Language toggle: TML ↔ ENG
+              GestureDetector(
+                onTap: () async {
+                  final next = _selectedLanguage == Language.tamil
+                      ? Language.english
+                      : Language.tamil;
+                  await DaayakattaiAudioService.setLanguage(next);
+                  await DaayakattaiStorageService.saveLanguage(
+                      next == Language.tamil ? 'tamil' : 'english');
+                  if (mounted) setState(() => _selectedLanguage = next);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFFD9A843)),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    _selectedLanguage == Language.tamil ? 'TML' : 'ENG',
+                    style: const TextStyle(
+                      color: Color(0xFFD9A843),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 4),
-            IconButton(
-              icon: const Icon(Icons.refresh, color: Color(0xFFD9A843)),
-              onPressed: () => _resetGame(_currentMode),
-            ),
-          ],
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Color(0xFFD9A843)),
+                onPressed: () => _resetGame(_currentMode),
+              ),
+            ],
+          ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Row(
-          children: [
-            Text(
-              'Player ${_game.currentPlayer.id + 1} 🎯 Rolls: ${_game.pendingRolls.isEmpty ? "-" : _game.pendingRolls.map((r) => r.value).join(", ")}',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            children: [
+              Text(
+                'Player ${_game.currentPlayer.id + 1} 🎯 Rolls: ${_game.pendingRolls.isEmpty ? "-" : _game.pendingRolls.map((r) => r.value).join(", ")}',
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ],
+          ),
         ),
-      ),
-      Expanded(
-        child: GestureDetector(
-          onTapUp: _handleTapUp,
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_pulseController, _moveAnimation]),
-            builder: (context, _) => RepaintBoundary(
-              key: _boardKey,
-              child: CustomPaint(
-                painter: DaayakattaiBoardPainter(
-                  game: _game,
-                  validPieceKeys: _validPieceKeys,
-                  pulse: _pulseController.value,
-                  movingPieceKey: _movingPieceKey,
-                  moveFromCell: _moveFromCell,
-                  moveToCell: _moveToCell,
-                  moveProgress: _moveAnimation.value,
+        Expanded(
+          child: GestureDetector(
+            onTapUp: _handleTapUp,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_pulseController, _moveAnimation]),
+              builder: (context, _) => RepaintBoundary(
+                key: _boardKey,
+                child: CustomPaint(
+                  painter: DaayakattaiBoardPainter(
+                    game: _game,
+                    validPieceKeys: _validPieceKeys,
+                    pulse: _pulseController.value,
+                    movingPieceKey: _movingPieceKey,
+                    moveFromCell: _moveFromCell,
+                    moveToCell: _moveToCell,
+                    moveProgress: _moveAnimation.value,
+                  ),
+                  size: Size.infinite,
                 ),
-                size: Size.infinite,
               ),
             ),
           ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          children: [
-            // Animated dice display
-            DiceAnimationWidget(
-              rollValue: _game.currentRoll?.value ?? 0,
-              isRolling: false,
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _game.needsRoll ? _rollDice : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD9A843),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            children: [
+              // Animated dice display
+              DiceAnimationWidget(
+                rollValue: _game.currentRoll?.value ?? 0,
+                isRolling: false,
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _game.needsRoll ? _rollDice : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD9A843),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'தாயம் எறி / Roll Dice',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-                child: const Text(
-                  'தாயம் எறி / Roll Dice',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
   @override
   void dispose() {
@@ -973,7 +1094,7 @@ Widget build(BuildContext context) {
 
   void _handleGameFinished() async {
     final playerStats = <String, PlayerMatchStats>{};
-    
+
     for (int i = 0; i < _game.players.length; i++) {
       String profileId = 'fallback-$i';
       if (widget.initialProfiles != null && i < widget.initialProfiles!.length) {
@@ -1099,10 +1220,10 @@ Widget build(BuildContext context) {
     // Check if user tapped a piece
     final player = _game.currentPlayer;
     final legalMoves = _game.getLegalMoves();
-    
+
     for (final move in legalMoves) {
       final piece = player.pieces[move.pieceId];
-      
+
       // Determine if tap coordinates match piece location
       bool tapped = false;
       if (piece.state == PieceState.home) {
@@ -1252,22 +1373,22 @@ Widget build(BuildContext context) {
     setState(() {
       _currentMode = GameMode.twoPlayer;
       _game = DaayakattaiGame(mode: _currentMode);
-      
+
       // Add two bonus rolls to pending rolls
       _game.debugAddPendingRoll(12);
       _game.debugAddPendingRoll(1);
-      
+
       // Set consecutive bonus count to 2
       _game.debugSetConsecutiveBonusCount(2);
-      
+
       // Override rolling phase to true so player must roll once more
       _game.debugSetNeedsRoll(true);
-      
+
       _validPieceKeys.clear();
       _pulseController.stop();
       _pulseController.value = 0;
     });
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Scenario: Roll once more to trigger 3-strike forfeit!')),
