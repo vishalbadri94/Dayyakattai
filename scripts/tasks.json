@@ -5,8 +5,10 @@
     "type": "logic",
     "description": "Build Agora RTM game state sync service",
     "output_file": "lib/services/daayakattai_rtm_service.dart",
-    "context_files": ["lib/daayakattai_engine.dart"],
-    "done": false,
+    "context_files": [
+      "lib/daayakattai_engine.dart"
+    ],
+    "done": true,
     "prompt": "Create a Flutter service file `daayakattai_rtm_service.dart` for Daayakattai game state sync via Agora RTM.\n\nRequirements:\n1. Class `DaayakattaiRtmService` with:\n   - `static Future<void> init(String appId, String userId)` - initializes Agora RTM client\n   - `static Future<void> joinChannel(String channelName)` - joins RTM channel\n   - `static Future<void> leaveChannel()` - leaves channel\n   - `static Future<void> sendMove(Move move)` - serializes and broadcasts a Move as JSON\n   - `static Stream<Move> get incomingMoves` - stream of Move objects received from peers\n   - `static Future<void> dispose()` - cleanup\n2. Move serialization: `{'playerId': int, 'pieceId': int, 'kind': string, 'targetIndex': int}`\n3. Use agora_rtc_engine package (already in pubspec). Use RTM via AgoraRtmClient if available, or fallback to a simple mock that prints the move.\n4. Graceful error handling with debugPrint.\n5. Import: package:agora_rtc_engine/agora_rtc_engine.dart\n6. Import: dart:async, dart:convert\n\nOutput the COMPLETE file in a ```dart code block."
   },
   {
@@ -19,7 +21,7 @@
       "lib/services/daayakattai_share_service.dart",
       "lib/daayakattai_engine.dart"
     ],
-    "done": false,
+    "done": true,
     "prompt": "Create a Flutter screen file `room_lobby_screen.dart` for the Daayakattai game room lobby.\n\nDesign: Dark red theme `Color(0xFF2B0A0A)`, gold accents `Color(0xFFD9A843)`, ivory text `Color(0xFFF1E4C4)`.\n\nThe screen has two modes selected by a toggle:\n\nHOST MODE:\n- Shows a generated 6-char room code (e.g. 'DAY4K2') in large gold text\n- 'Copy Code' button + 'Share via WhatsApp' button\n- A list of joined players (placeholder: 'Waiting for players...' animated dots)\n- Game mode selector dropdown (2 Player, 4 Player Teams, etc.)\n- 'Start Game' button (gold, enabled only when >= 2 players)\n- On Start: pops back with (channelName, gameMode) result\n\nGUEST MODE:\n- Text field to enter a room code\n- 'Join' button that validates the code format (DAY + 3 chars)\n- Status text: 'Connecting...' spinner while joining\n- On success: shows host's game mode and 'Ready' status\n\nUsing:\n- `DaayakattaiShareService.generateChannelName()` for room code\n- `DaayakattaiShareService.shareGameInvite(...)` for WhatsApp share\n- `GameMode` enum from `daayakattai_engine.dart`\n\nImports:\n- package:flutter/material.dart\n- package:flutter/services.dart (for clipboard)\n- ../daayakattai_engine.dart\n- ../services/daayakattai_share_service.dart\n\nOutput the COMPLETE file in a ```dart code block."
   },
   {
@@ -29,7 +31,7 @@
     "description": "Reconnection handling with exponential backoff for Agora RTC",
     "output_file": "lib/services/daayakattai_reconnect_service.dart",
     "context_files": [],
-    "done": false,
+    "done": true,
     "prompt": "Create a Flutter service `daayakattai_reconnect_service.dart` for handling Agora RTC disconnections.\n\nRequirements:\n1. Class `DaayakattaiReconnectService` with:\n   - `static void onDisconnected(VoidCallback reconnectCallback)`: starts an exponential backoff retry loop\n   - Retry delays: 1s, 2s, 4s, 8s, 16s, 30s (cap at 30s), max 10 retries\n   - `static void onReconnected()`: cancels any pending retry\n   - `static void dispose()`: cleans up timers\n   - `static Stream<ReconnectStatus> get statusStream`: broadcasts reconnect status\n2. `enum ReconnectStatus { connected, disconnected, retrying, failed }`\n3. Uses `dart:async` Timer for backoff\n4. debugPrint each retry attempt with attempt number and delay\n5. After 10 failed retries, emits `ReconnectStatus.failed` and stops\n\nOutput the COMPLETE file in a ```dart code block."
   },
   {
@@ -50,6 +52,6 @@
     "output_file": "lib/screens/onboarding_screen.dart",
     "context_files": [],
     "done": false,
-    "prompt": "Create a stunning Flutter onboarding screen file `onboarding_screen.dart`.\n\nDesign: Dark red `Color(0xFF2B0A0A)` background, gold `Color(0xFFD9A843)` accents, ivory `Color(0xFFF1E4C4)` text. Use PageView with 3 pages.\n\nPage 1 - Welcome:\n- Large gold title: 'Daayakattai' (32sp bold)\n- Subtitle: 'தமிழரின் பாரம்பரிய விளையாட்டு' (Tamil, 18sp)\n- Subtitle English: 'The Ancient Tamil Board Game' (16sp ivory)\n- A decorative 7x7 grid illustration drawn with CustomPaint (simple colored cells, no images)\n\nPage 2 - How to Play:\n- Title: 'How to Play / விளையாடுவது எப்படி'\n- 4 rule cards with icons:\n  1. Icons.casino - 'Roll dice (1,5,6,12 = bonus roll)'\n  2. Icons.people - 'Pairs (Jodu) block enemies'\n  3. Icons.cut - 'Capture (Vettu) to enter inner track'\n  4. Icons.emoji_events - 'First team to finish all pieces wins'\n- Each card: dark `Color(0xFF3F0E0E)` background, gold border, ivory text\n\nPage 3 - Get Started:\n- Title: 'Start Playing!'\n- Name input field (gold border, ivory text): 'Enter your name'\n- Big gold 'Play Now' button\n- On tap: saves name via Navigator.pop(context, name)\n\nBottom: dot indicators (gold active, grey inactive), 'Skip' text button top-right.\n\nImports: package:flutter/material.dart, dart:math\n\nOutput the COMPLETE file in a ```dart code block."
+    "prompt": "Create a stunning Flutter onboarding screen file `onboarding_screen.dart`.\n\nDesign: Dark red `Color(0xFF2B0A0A)` background, gold `Color(0xFFD9A843)` accents, ivory `Color(0xFFF1E4C4)` text. Use PageView with 3 pages.\n\nPage 1 - Welcome:\n- Large gold title: 'Daayakattai' (32sp bold)\n- Subtitle: '\u0ba4\u0bae\u0bbf\u0bb4\u0bb0\u0bbf\u0ba9\u0bcd \u0baa\u0bbe\u0bb0\u0bae\u0bcd\u0baa\u0bb0\u0bbf\u0baf \u0bb5\u0bbf\u0bb3\u0bc8\u0baf\u0bbe\u0b9f\u0bcd\u0b9f\u0bc1' (Tamil, 18sp)\n- Subtitle English: 'The Ancient Tamil Board Game' (16sp ivory)\n- A decorative 7x7 grid illustration drawn with CustomPaint (simple colored cells, no images)\n\nPage 2 - How to Play:\n- Title: 'How to Play / \u0bb5\u0bbf\u0bb3\u0bc8\u0baf\u0bbe\u0b9f\u0bc1\u0bb5\u0ba4\u0bc1 \u0b8e\u0baa\u0bcd\u0baa\u0b9f\u0bbf'\n- 4 rule cards with icons:\n  1. Icons.casino - 'Roll dice (1,5,6,12 = bonus roll)'\n  2. Icons.people - 'Pairs (Jodu) block enemies'\n  3. Icons.cut - 'Capture (Vettu) to enter inner track'\n  4. Icons.emoji_events - 'First team to finish all pieces wins'\n- Each card: dark `Color(0xFF3F0E0E)` background, gold border, ivory text\n\nPage 3 - Get Started:\n- Title: 'Start Playing!'\n- Name input field (gold border, ivory text): 'Enter your name'\n- Big gold 'Play Now' button\n- On tap: saves name via Navigator.pop(context, name)\n\nBottom: dot indicators (gold active, grey inactive), 'Skip' text button top-right.\n\nImports: package:flutter/material.dart, dart:math\n\nOutput the COMPLETE file in a ```dart code block."
   }
 ]

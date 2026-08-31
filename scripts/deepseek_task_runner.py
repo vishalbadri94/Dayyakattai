@@ -51,11 +51,11 @@ def get_key():
 def load_tasks():
     if not os.path.exists(TASKS_FILE):
         return []
-    with open(TASKS_FILE) as f:
+    with open(TASKS_FILE, encoding='utf-8') as f:
         return json.load(f)
 
 def save_tasks(tasks):
-    with open(TASKS_FILE, "w") as f:
+    with open(TASKS_FILE, "w", encoding='utf-8') as f:
         json.dump(tasks, f, indent=2)
 
 def extract_code(text, lang="dart"):
@@ -71,7 +71,7 @@ def load_prompt(task):
         return task["prompt"]
     prompt_path = os.path.join(ROOT_DIR, task.get("prompt_file", ""))
     if os.path.exists(prompt_path):
-        with open(prompt_path) as f:
+        with open(prompt_path, encoding='utf-8') as f:
             return f.read()
     return None
 
@@ -93,7 +93,7 @@ def execute_task(client, task):
     for ctx_file in task.get("context_files", []):
         ctx_path = os.path.join(ROOT_DIR, "daayakattai_app", ctx_file)
         if os.path.exists(ctx_path):
-            with open(ctx_path) as f:
+            with open(ctx_path, encoding='utf-8') as f:
                 context += f"\n\n--- {ctx_file} ---\n{f.read()[:4000]}"
 
     full_prompt = prompt + ("\n\nContext files:\n" + context if context else "")

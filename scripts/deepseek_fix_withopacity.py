@@ -4,21 +4,13 @@ DeepSeek Fix Agent — Replace withOpacity with withValues()
 Reads each affected file, replaces all .withOpacity(x) calls
 with .withValues(alpha: x) and writes the files back.
 """
-import os
-import re
-import sys
+import os, re, glob
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB_DIR  = os.path.join(ROOT_DIR, "daayakattai_app", "lib")
 
-# Files reported by flutter analyze
-AFFECTED_FILES = [
-    os.path.join(LIB_DIR, "agora_video_header.dart"),
-    os.path.join(LIB_DIR, "daayakattai_board.dart"),
-    os.path.join(LIB_DIR, "screens", "game_setup_screen.dart"),
-    os.path.join(LIB_DIR, "screens", "profile_screen.dart"),
-    os.path.join(LIB_DIR, "screens", "stats_screen.dart"),
-]
+# Scan ALL dart files in lib automatically
+AFFECTED_FILES = glob.glob(os.path.join(LIB_DIR, "**", "*.dart"), recursive=True)
 
 # Pattern: .withOpacity(0.15) -> .withValues(alpha: 0.15)
 PATTERN = re.compile(r"\.withOpacity\(([^)]+)\)")
